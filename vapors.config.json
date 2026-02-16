@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "projectRoot": ".",
+  "structures": {
+    "commands": "src/commands/categories",
+    "events": "src/events",
+    "utils": "src/utils"
+  }
+}
