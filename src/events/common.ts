@@ -1,8 +1,8 @@
+import type { CommandInteraction } from 'discord.js';
 import type { ArgsOf } from 'discordx';
 import { Discord, On, Once } from 'discordx';
 import { bot } from '../bot';
 import { errorHandler } from '../utils/errorHandler';
-import { CommandInteraction } from 'discord.js';
 
 @Discord()
 export class Common {
@@ -37,22 +37,22 @@ export class Common {
 
   @Once()
   async ready(): Promise<void> {
-   // Make sure all guilds are cached
-  await bot.guilds.fetch();
+    // Make sure all guilds are cached
+    await bot.guilds.fetch();
 
-  // Synchronize applications commands with Discord
-  void bot.initApplicationCommands();
-  
-  // await bot.application?.commands.set([]);
+    // Synchronize applications commands with Discord
+    void bot.initApplicationCommands();
 
-  // To clear all guild commands, uncomment this line,
-  // This is useful when moving from guild commands to global commands
-  // It must only be executed once
-  //
-  //  await bot.clearApplicationCommands(
-  //    ...bot.guilds.cache.map((g) => g.id)
-  //  );
+    // await bot.application?.commands.set([]);
 
-  console.log(`Logged in as ${bot.user?.username}`);
+    // To clear all guild commands, uncomment this line,
+    // This is useful when moving from guild commands to global commands
+    // It must only be executed once
+    //
+    //  await bot.clearApplicationCommands(
+    //    ...bot.guilds.cache.map((g) => g.id)
+    //  );
+
+    console.log(`Logged in as ${bot.user?.username}`);
   }
 }
