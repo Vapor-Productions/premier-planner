@@ -5,7 +5,8 @@ export const locales = {
       ready: 'Bot is klaar en online!',
       shutdown: 'Bot wordt afgesloten...',
       error: 'Er is een fout opgetreden',
-      permission: 'Je hebt niet de juiste rechten om dit commando te gebruiken. (Permissie(s): {permission})',
+      permission:
+        'Je hebt niet de juiste rechten om dit commando te gebruiken. (Permissie(s): {permission})',
       status: {
         nightmt: 'NightMT',
         madeby: 'Made by Vapor',
@@ -134,7 +135,8 @@ export const locales = {
       ready: 'Bot is ready and online!',
       shutdown: 'Bot is shutting down...',
       error: 'An error has occurred',
-      permission: 'You do not have the correct permissions to use this command. (Permission(s): {permission})',
+      permission:
+        'You do not have the correct permissions to use this command. (Permission(s): {permission})',
       status: {
         nightmt: 'NightMT',
         madeby: 'Made by Vapor',
@@ -202,7 +204,7 @@ export const locales = {
         response: 'Pong! Latency: {latency}ms',
       },
       profile: {
-        description: 'Show a user\'s profile.',
+        description: "Show a user's profile.",
         user: 'The user to show information about.',
         title: 'Profile of {username}',
         joined: 'Member since',
@@ -263,7 +265,8 @@ export const locales = {
       ready: '¡Bot está listo y en línea!',
       shutdown: 'Bot se está cerrando...',
       error: 'Ha ocurrido un error',
-      permission: 'No tienes los permisos correctos para usar este comando. (Permiso(s): {permission})',
+      permission:
+        'No tienes los permisos correctos para usar este comando. (Permiso(s): {permission})',
       status: {
         nightmt: 'NightMT',
         madeby: 'Made by Vapor',
@@ -415,8 +418,8 @@ export function t(key: string, locale: Locale = 'nl', params?: Record<string, st
  * This function should be used in commands where we have access to the user
  */
 export async function tWithUser(
-  key: string, 
-  userId: string, 
+  key: string,
+  userId: string,
   params?: Record<string, string>
 ): Promise<string> {
   try {
@@ -450,6 +453,6 @@ export function getAvailableLanguages(): Array<{ name: string; value: string }> 
  */
 export function getLanguageName(code: string): string {
   const languages = getAvailableLanguages();
-  const language = languages.find(lang => lang.value === code);
+  const language = languages.find((lang) => lang.value === code);
   return language ? language.name : code;
 }
