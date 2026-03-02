@@ -1,5 +1,6 @@
 import type { Client, CommandInteraction, Interaction, Message, TextChannel } from 'discord.js';
 import { EmbedBuilder, MessageFlags } from 'discord.js';
+import { getDefaultLocale, t, tWithUser } from './localization.js';
 
 /**
  * Error severity levels
@@ -182,28 +183,45 @@ export class ErrorHandler {
         return text.length > max ? `${text.slice(0, max - 3)}...` : text;
       };
 
+      const userId = interaction.user?.id;
+      const defaultLocale = getDefaultLocale();
+      const get = (key: string) =>
+        userId ? tWithUser(key, userId) : Promise.resolve(t(key, defaultLocale));
+      const [title, description, errorTypeLabel, severityLabel, messageLabel, commandLabel, stackLabel, unknownLabel, noStackLabel] =
+        await Promise.all([
+          get('errors.embedTitle'),
+          get('errors.embedDescription'),
+          get('errors.errorType'),
+          get('errors.severity'),
+          get('errors.messageLabel'),
+          get('errors.commandLabel'),
+          get('errors.stackLabel'),
+          get('errors.unknown'),
+          get('errors.noStack'),
+        ]);
+
       const embed = new EmbedBuilder()
-        .setTitle('❌ Error Occurred')
+        .setTitle(title)
         .setColor('#ff0000')
-        .setDescription('An unexpected error occurred while processing your request.')
+        .setDescription(description)
         .addFields(
-          { name: 'Error Type', value: error.name, inline: true },
-          { name: 'Severity', value: error.severity, inline: true }
+          { name: errorTypeLabel, value: error.name, inline: true },
+          { name: severityLabel, value: error.severity, inline: true }
         )
         .setTimestamp();
 
       // Add more details for development
       if (process.env.NODE_ENV === 'development') {
         embed.addFields(
-          { name: 'Message', value: truncate(error.message), inline: false },
+          { name: messageLabel, value: truncate(error.message), inline: false },
           {
-            name: 'Command',
-            value: error.context.command || 'Unknown',
+            name: commandLabel,
+            value: error.context.command || unknownLabel,
             inline: true,
           },
           {
-            name: 'Stack',
-            value: truncate(error.stack || 'No stack trace'),
+            name: stackLabel,
+            value: truncate(error.stack || noStackLabel),
             inline: false,
           }
         );
@@ -228,7 +246,7 @@ export class ErrorHandler {
 
     // Clean old entries
     this.errorCount.forEach((_count, errorKey) => {
-      if (errorKey.includes('-') && parseInt(errorKey.split('-')[0]) < oneMinuteAgo) {
+      if (errorKey.includes('-') && parseInt(errorKey.split('-')[0], 10) < oneMinuteAgo) {
         this.errorCount.delete(errorKey);
       }
     });

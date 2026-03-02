@@ -1,6 +1,5 @@
-import { PrismaClient, type User } from '../generated/prisma';
-
-const prisma = new PrismaClient();
+import type { User } from '../generated/prisma';
+import { prisma } from './prisma.js';
 
 export interface UserData {
   discordId: string;

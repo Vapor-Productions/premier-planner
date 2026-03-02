@@ -3,7 +3,7 @@ import { config } from 'dotenv';
 
 import { bot } from './bot.js';
 import { errorHandler, setupGlobalErrorHandlers } from './utils/errorHandler.js';
-import { t } from './utils/localization.js';
+import { getDefaultLocale, t } from './utils/localization.js';
 import { closePrismaConnection } from './utils/userManager.js';
 
 // Load environment variables from .env file
@@ -36,13 +36,13 @@ async function run() {
 
   // Handle graceful shutdown
   process.on('SIGINT', async () => {
-    console.log(t('bot.shutdown'));
+    console.log(t('bot.shutdown', getDefaultLocale()));
     await closePrismaConnection();
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
-    console.log(t('bot.shutdown'));
+    console.log(t('bot.shutdown', getDefaultLocale()));
     await closePrismaConnection();
     process.exit(0);
   });

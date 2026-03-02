@@ -8,9 +8,8 @@ export const locales = {
       permission:
         'Je hebt niet de juiste rechten om dit commando te gebruiken. (Permissie(s): {permission})',
       status: {
-        nightmt: 'NightMT',
         madeby: 'Made by Vapor',
-        invite: 'discord.gg/opminetopia',
+        website: 'https://premierplanner.eu/docs'
       },
     },
 
@@ -61,6 +60,16 @@ export const locales = {
         title: "NightMT Bot Commando's",
         category: 'Categorie',
         usage: 'Gebruik',
+        commandCenter: '{botName} Command Center',
+        welcome: 'Welkom bij het commandohub van {botName}!',
+        categoriesTitle: 'Command Categorieën',
+        categoriesDescription1: 'Kies hieronder een categorie om beschikbare commando\'s te bekijken.',
+        categoriesDescription2: 'Elke categorie bevat gespecialiseerde commando\'s voor verschillende functies.',
+        categoryCommands: '{category} Commando\'s',
+        accessDenied: 'Toegang geweigerd',
+        accessDeniedError: 'Alleen de persoon die het commando heeft uitgevoerd kan dit menu gebruiken!',
+        accessDeniedHint: 'Voer het commando zelf uit om het helpmenu te openen.',
+        selectPlaceholder: 'Kies een commandocategorie...',
       },
       info: {
         description: 'Toon informatie over de bot.',
@@ -85,16 +94,23 @@ export const locales = {
       setup: {
         description: 'Stel de bot in voor deze server.',
         title: 'Admin Setup Center',
+        header: 'Setup',
+        intro: 'Dit commando wordt gebruikt om de bot in te stellen.',
+        menuTitle: 'Setup Menu',
+        menuDescription: 'Selecteer een optie om door te gaan.',
+        selectPlaceholder: 'Selecteer een optie om door te gaan',
+        invalidSelection: 'Ongeldige selectie.',
+        optionGeneral: 'Team Instellingen',
         alreadySetup: 'Deze server is al ingesteld.',
         success: 'De bot is ingesteld voor deze server.',
-        ticketChannelTitle: 'Ticket Channel',
-        ticketChannelDescription: 'Kies een kanaal voor de ticket systemen',
-        ticketChannelPlaceholder: 'Kies een kanaal voor de ticket systemen',
-        ticketButtonLabel: 'Ticket System',
-        automodButtonLabel: 'Automod System',
-        ticketCategoryTitle: 'Ticket Category',
-        ticketCategoryDescription: 'Kies een categorie voor de ticket systemen',
-        ticketCategoryPlaceholder: 'Kies een categorie voor de ticket systemen',
+        completeAllSteps: 'Voltooi eerst alle stappen voordat je kunt bevestigen.',
+        completeAllFields: 'Vul alle verplichte velden in voordat je verder gaat.',
+        dataSaved: 'Teaminformatie is opgeslagen. Voeg nu leden toe en bevestig om het team aan te maken.',
+        teamCreated: 'Het team is succesvol aangemaakt.',
+        guildNotFound: 'Kan de servercontext niet bepalen. Probeer het later opnieuw.',
+        alreadyInTeam: 'Een of meer geselecteerde leden zitten al in een team.',
+        teamLeaderCannotBeAdded: 'De teamleider kan niet als lid worden toegevoegd.',
+        teamAlreadyExists: 'Er bestaat al een team met deze naam in deze server.',
       },
       fetchData: {
         description: 'Haal alle data op uit de SheetDB API.',
@@ -127,6 +143,15 @@ export const locales = {
       cannotKickSelf: 'Je kunt jezelf niet kicken.',
       cannotTimeoutSelf: 'Je kunt jezelf geen timeout geven.',
       botMissingPermission: 'Ik heb niet de juiste rechten om deze actie uit te voeren.',
+      embedTitle: '❌ Er is een fout opgetreden',
+      embedDescription: 'Er is een onverwachte fout opgetreden bij het verwerken van je verzoek.',
+      errorType: 'Fouttype',
+      severity: 'Ernst',
+      messageLabel: 'Bericht',
+      commandLabel: 'Commando',
+      stackLabel: 'Stack',
+      unknown: 'Onbekend',
+      noStack: 'Geen stack trace',
     },
   },
   en: {
@@ -138,10 +163,9 @@ export const locales = {
       permission:
         'You do not have the correct permissions to use this command. (Permission(s): {permission})',
       status: {
-        nightmt: 'NightMT',
-        madeby: 'Made by Vapor',
-        invite: 'discord.gg/opminetopia',
-      },
+          madeby: 'Made by Vapor',
+          website: 'https://premierplanner.eu/docs'
+       },
     },
 
     // Commands
@@ -191,6 +215,16 @@ export const locales = {
         title: 'NightMT Bot Commands',
         category: 'Category',
         usage: 'Usage',
+        commandCenter: '{botName} Command Center',
+        welcome: 'Welcome to {botName}\'s command hub!',
+        categoriesTitle: 'Command Categories',
+        categoriesDescription1: 'Choose a category below to explore available commands.',
+        categoriesDescription2: 'Each category contains specialized commands for different features.',
+        categoryCommands: '{category} Commands',
+        accessDenied: 'Access Denied',
+        accessDeniedError: 'Only the command executor can interact with this menu!',
+        accessDeniedHint: 'Run the command yourself to access the help menu.',
+        selectPlaceholder: 'Choose a command category...',
       },
       info: {
         description: 'Show information about the bot.',
@@ -215,16 +249,23 @@ export const locales = {
       setup: {
         description: 'Set up the bot for this server.',
         title: 'Admin Setup Center',
+        header: 'Setup',
+        intro: 'This command is used to setup the bot.',
+        menuTitle: 'Setup Menu',
+        menuDescription: 'Select an option to continue.',
+        selectPlaceholder: 'Select an option to continue',
+        invalidSelection: 'Invalid selection.',
+        optionGeneral: 'Team Settings',
         alreadySetup: 'This server is already set up.',
         success: 'The bot has been set up for this server.',
-        ticketChannelTitle: 'Ticket Channel',
-        ticketChannelDescription: 'Choose a channel for the ticket systems',
-        ticketChannelPlaceholder: 'Choose a channel for the ticket systems',
-        ticketButtonLabel: 'Ticket System',
-        automodButtonLabel: 'Automod System',
-        ticketCategoryTitle: 'Ticket Category',
-        ticketCategoryDescription: 'Choose a category for the ticket systems',
-        ticketCategoryPlaceholder: 'Choose a category for the ticket systems',
+        completeAllSteps: 'Please complete all steps before confirming.',
+        completeAllFields: 'Please fill in all required fields before continuing.',
+        dataSaved: 'Team data has been saved. Now add members and confirm to create the team.',
+        teamCreated: 'Team has been created successfully.',
+        guildNotFound: 'Could not determine the server context. Please try again later.',
+        alreadyInTeam: 'One or more selected members are already in a team.',
+        teamLeaderCannotBeAdded: 'The team leader cannot be added as a member.',
+        teamAlreadyExists: 'A team with this name already exists in this server.',
       },
       fetchData: {
         description: 'Fetch all data from the SheetDB API.',
@@ -257,136 +298,15 @@ export const locales = {
       cannotKickSelf: 'You cannot kick yourself.',
       cannotTimeoutSelf: 'You cannot timeout yourself.',
       botMissingPermission: 'I do not have the correct permissions to perform this action.',
-    },
-  },
-  es: {
-    // Bot responses
-    bot: {
-      ready: '¡Bot está listo y en línea!',
-      shutdown: 'Bot se está cerrando...',
-      error: 'Ha ocurrido un error',
-      permission:
-        'No tienes los permisos correctos para usar este comando. (Permiso(s): {permission})',
-      status: {
-        nightmt: 'NightMT',
-        madeby: 'Made by Vapor',
-        invite: 'discord.gg/opminetopia',
-      },
-    },
-
-    // Commands
-    commands: {
-      sendmessage: {
-        description: 'Enviar un mensaje a un canal.',
-        channel: 'El canal donde se debe enviar el mensaje.',
-        message: 'El mensaje a enviar.',
-        success: 'Mensaje enviado a {channel}.',
-      },
-      ban: {
-        description: 'Expulsar a un miembro del servidor.',
-        member: 'El miembro a expulsar.',
-        reason: 'La razón de la expulsión.',
-        success: 'El usuario {user} ha sido expulsado del servidor.',
-        userMessage: 'Has sido expulsado de {guild} por {moderator}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      kick: {
-        description: 'Expulsar temporalmente a un miembro del servidor.',
-        member: 'El miembro a expulsar.',
-        reason: 'La razón de la expulsión.',
-        success: 'El usuario {user} ha sido expulsado del servidor.',
-        userMessage: 'Has sido expulsado de {guild} por {moderator}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      timeout: {
-        description: 'Dar un timeout a un miembro.',
-        member: 'El miembro al que dar timeout.',
-        duration: 'La duración del timeout (ej. 1h, 30m, 1d).',
-        reason: 'La razón del timeout.',
-        success: 'El usuario {user} ha recibido un timeout de {duration}.',
-        removed: 'El timeout para {user} ha sido removido exitosamente.',
-        userMessage: 'Has recibido un timeout de {duration} en {guild} por {moderator}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      warn: {
-        description: 'Advertir a un miembro.',
-        member: 'El miembro a advertir.',
-        reason: 'La razón de la advertencia.',
-        success: 'El usuario {user} ha sido advertido.',
-        userMessage: 'Has sido advertido por {moderator} en {guild}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      help: {
-        description: 'Mostrar todos los comandos disponibles.',
-        title: 'Comandos del Bot NightMT',
-        category: 'Categoría',
-        usage: 'Uso',
-      },
-      info: {
-        description: 'Mostrar información sobre el bot.',
-        title: 'Información del Bot',
-        version: 'Versión',
-        uptime: 'Tiempo activo',
-        serverCount: 'Número de servidores',
-      },
-      ping: {
-        description: 'Probar la latencia del bot.',
-        response: '¡Pong! Latencia: {latency}ms',
-      },
-      profile: {
-        description: 'Mostrar el perfil de un usuario.',
-        user: 'El usuario del que mostrar información.',
-        title: 'Perfil de {username}',
-        joined: 'Miembro desde',
-        roles: 'Roles',
-        infractions: 'Infracciones',
-        action: 'Qué quieres hacer con tu perfil',
-      },
-      setup: {
-        description: 'Configurar el bot para este servidor.',
-        title: 'Centro de Configuración Admin',
-        alreadySetup: 'Este servidor ya está configurado.',
-        success: 'El bot ha sido configurado para este servidor.',
-        ticketChannelTitle: 'Canal de Tickets',
-        ticketChannelDescription: 'Elige un canal para los sistemas de tickets',
-        ticketChannelPlaceholder: 'Elige un canal para los sistemas de tickets',
-        ticketButtonLabel: 'Sistema de Tickets',
-        automodButtonLabel: 'Sistema de Automod',
-        ticketCategoryTitle: 'Categoría de Tickets',
-        ticketCategoryDescription: 'Elige una categoría para los sistemas de tickets',
-        ticketCategoryPlaceholder: 'Elige una categoría para los sistemas de tickets',
-      },
-      fetchData: {
-        description: 'Obtener todos los datos de la API de SheetDB.',
-        success: 'Obtenidos {count} filas de datos',
-      },
-      language: {
-        description: 'Cambiar tu preferencia de idioma.',
-        language: 'El idioma al que cambiar.',
-        success: 'Tu idioma ha sido cambiado a {language}.',
-        current: 'Tu idioma actual es {language}.',
-        available: 'Idiomas disponibles',
-      },
-    },
-
-    // Categories
-    categories: {
-      admin: 'Administración',
-      moderation: 'Moderación',
-      utility: 'Utilidades',
-    },
-
-    // Errors
-    errors: {
-      userNotFound: 'Usuario no encontrado.',
-      invalidDuration: 'Duración inválida proporcionada.',
-      alreadyBanned: 'Este usuario ya está expulsado.',
-      alreadyKicked: 'Este usuario ya fue expulsado.',
-      alreadyTimedOut: 'Este usuario ya tiene un timeout.',
-      cannotBanSelf: 'No puedes expulsarte a ti mismo.',
-      cannotKickSelf: 'No puedes expulsarte a ti mismo.',
-      cannotTimeoutSelf: 'No puedes darte timeout a ti mismo.',
-      botMissingPermission: 'No tengo los permisos correctos para realizar esta acción.',
+      embedTitle: '❌ Error Occurred',
+      embedDescription: 'An unexpected error occurred while processing your request.',
+      errorType: 'Error Type',
+      severity: 'Severity',
+      messageLabel: 'Message',
+      commandLabel: 'Command',
+      stackLabel: 'Stack',
+      unknown: 'Unknown',
+      noStack: 'No stack trace',
     },
   },
 };
@@ -394,7 +314,12 @@ export const locales = {
 export type Locale = keyof typeof locales;
 export type LocaleKey = keyof typeof locales.nl;
 
-export function t(key: string, locale: Locale = 'nl', params?: Record<string, string>): string {
+/** Default locale when no user context is available (e.g. bot startup, process exit) */
+export function getDefaultLocale(): Locale {
+  return 'en';
+}
+
+export function t(key: string, locale: Locale = getDefaultLocale(), params?: Record<string, string>): string {
   const keys = key.split('.');
   let value: unknown = locales[locale];
 
@@ -425,16 +350,16 @@ export async function tWithUser(
   try {
     const { getUserByDiscordId } = await import('./userManager');
     const user = await getUserByDiscordId(userId);
-    const userLocale = (user?.language as Locale) || 'nl';
+    const userLocale = (user?.language as Locale) || getDefaultLocale();
     return t(key, userLocale, params);
   } catch (error) {
     console.error('Error getting user language:', error);
-    return t(key, 'nl', params); // Fallback to Dutch
+    return t(key, getDefaultLocale(), params);
   }
 }
 
 export function getLocale(): Locale {
-  return 'nl'; // Default to Dutch
+  return getDefaultLocale();
 }
 
 /**

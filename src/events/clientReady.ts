@@ -1,12 +1,12 @@
 import { ActivityType } from 'discord.js';
 import { Discord, Once } from 'discordx';
 import { bot } from '../bot';
-import { t } from '../utils/localization';
+import { getDefaultLocale, t } from '../utils/localization';
 
 @Discord()
 export class Ready {
   @Once()
-  async ready(): Promise<void> {
+  async clientReady(): Promise<void> {
     // Make sure all guilds are cached
     await bot.guilds.fetch();
 
@@ -22,10 +22,10 @@ export class Ready {
     //  );
 
     // Set the client status that rotates every minute with a status from an array of statuses
+    const defaultLocale = getDefaultLocale();
     const statuses = [
-      { type: ActivityType.Playing, name: t('bot.status.nightmt', 'nl') },
-      { type: ActivityType.Playing, name: t('bot.status.madeby', 'nl') },
-      { type: ActivityType.Playing, name: t('bot.status.invite', 'nl') },
+      { type: ActivityType.Playing, name: t('bot.status.website', defaultLocale) },
+      { type: ActivityType.Playing, name: t('bot.status.madeby', defaultLocale) },
     ];
     setInterval(() => {
       const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
