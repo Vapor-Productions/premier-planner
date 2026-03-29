@@ -1,3 +1,4 @@
+/** biome-ignore-all assist/source/organizeImports: Annoying warnings */
 import {
   ButtonComponent,
   Discord,
@@ -10,24 +11,26 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  type ButtonInteraction,
   ContainerBuilder,
-  type CommandInteraction,
+  GuildMember,
+  LabelBuilder,
+  MentionableSelectMenuBuilder,
   MessageFlags,
   ModalBuilder,
-  type ModalSubmitInteraction,
+  PermissionsBitField,
   SeparatorSpacingSize,
   StringSelectMenuBuilder,
-  type StringSelectMenuInteraction,
   TextDisplayBuilder,
   TextInputBuilder,
   TextInputStyle,
-  LabelBuilder,
-  MentionableSelectMenuBuilder,
+  type ButtonInteraction,
+  type CommandInteraction,
   type MentionableSelectMenuInteraction,
-  PermissionsBitField, GuildMember,
+  type ModalSubmitInteraction,
+  type StringSelectMenuInteraction,
 } from 'discord.js';
 import { tWithUser } from '../../../utils/localization.js';
+import { fetchPremierTeamByNameAndTag } from '../../../utils/premierApi.js';
 import { ensureUserExists } from '../../../utils/userManager.js';
 import { prisma } from '../../../utils/prisma.js';
 
@@ -35,6 +38,7 @@ type TeamCreationState = {
   hasData: boolean;
   hasMembers: boolean;
   teamName?: string;
+  teamTag?: string;
   ownerId?: string;
   memberIds?: string[];
 };
@@ -237,7 +241,18 @@ export class Setup {
           .setValue('')
       );
 
-      const ownerInput = new LabelBuilder()
+    const tagInput = new LabelBuilder()
+      .setLabel('Enter the Premier team tag')
+      .setTextInputComponent(
+        new TextInputBuilder()
+          .setCustomId('create_team_tag_input')
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
+          .setPlaceholder('TAG')
+          .setValue('')
+      );
+
+    const ownerInput = new LabelBuilder()
       .setLabel('Enter the owner of the team')
       .setMentionableSelectMenuComponent(
         new MentionableSelectMenuBuilder()
@@ -247,7 +262,7 @@ export class Setup {
           .setMaxValues(1)
       );
 
-    nameModal.addLabelComponents(nameInput, ownerInput);
+    nameModal.addLabelComponents(nameInput, tagInput, ownerInput);
 
     await interaction.showModal(nameModal);
   }
@@ -255,7 +270,14 @@ export class Setup {
   @ButtonComponent({ id: 'create_team_confirm' })
   async handleCreateTeamConfirm(interaction: ButtonInteraction): Promise<void> {
     const state = getTeamCreationState(interaction.user.id);
-    if (!state.hasData || !state.hasMembers || !state.teamName || !state.ownerId || !state.memberIds?.length) {
+    if (
+      !state.hasData ||
+      !state.hasMembers ||
+      !state.teamName ||
+      !state.teamTag ||
+      !state.ownerId ||
+      !state.memberIds?.length
+    ) {
       await interaction.reply({
         content: await tWithUser('commands.setup.completeAllSteps', interaction.user.id),
         flags: MessageFlags.Ephemeral,
@@ -272,11 +294,13 @@ export class Setup {
       return;
     }
 
-    // Check if a team with this name already exists in this guild
-    const existingTeam = await prisma.team.findFirst({
+    // Check if a team with this name + tag already exists (compound unique in schema)
+    const existingTeam = await prisma.team.findUnique({
       where: {
-        guildId,
-        name: state.teamName,
+        name_teamTag: {
+          name: state.teamName,
+          teamTag: state.teamTag,
+        },
       },
     });
     if (existingTeam) {
@@ -288,20 +312,23 @@ export class Setup {
     }
 
     // Persist the team and members in a single transaction
-    await prisma.team.create({
-      data: {
-        name: state.teamName,
-        guildId,
-        leader: {
-          connect: {
-            discordId: state.ownerId,
+    await prisma.team.create(
+      {
+        data: {
+          name: state.teamName,
+          teamTag: state.teamTag,
+          guildId,
+          leader: {
+            connect: {
+              discordId: state.ownerId,
+            },
+          },
+          members: {
+            connect: state.memberIds.map((memberId) => ({ discordId: memberId })),
           },
         },
-        members: {
-          connect: state.memberIds.map((memberId) => ({ discordId: memberId })),
-        },
-      },
-    });
+      } as any,
+    );
 
     teamCreationState.delete(interaction.user.id);
 
@@ -343,7 +370,8 @@ export class Setup {
       flags: MessageFlags.IsComponentsV2,
     });
 
-    await interaction.reply({
+    // `update` already acknowledged this interaction; use followUp for the extra message
+    await interaction.followUp({
       content: await tWithUser('commands.setup.teamCreated', interaction.user.id),
       flags: MessageFlags.Ephemeral,
     });
@@ -352,20 +380,35 @@ export class Setup {
   @ModalComponent({ id: 'create_team_name_modal' })
   async handleCreateTeamNameModal(interaction: ModalSubmitInteraction): Promise<void> {
     const name = interaction.fields.getTextInputValue('create_team_name_input');
+    const rawTag = interaction.fields.getTextInputValue('create_team_tag_input');
     const ownerCollection = interaction.fields.getSelectedMembers('create_team_owner_input');
     const rawOwner = ownerCollection?.first();
     const owner = rawOwner instanceof GuildMember ? rawOwner : null;
 
-    if (!name || !owner) {
+    if (!name || !rawTag || !owner) {
       await interaction.reply({
         content: await tWithUser('commands.setup.completeAllFields', interaction.user.id),
         flags: MessageFlags.Ephemeral,
       });
       return;
     }
+
+    const teamTag = rawTag.trim().toUpperCase();
+
+    // Verify Premier team actually exists for this name + tag
+    const premierTeam = await fetchPremierTeamByNameAndTag(name, teamTag);
+    if (!premierTeam) {
+      await interaction.reply({
+        content: await tWithUser('commands.setup.premierTeamNotFound', interaction.user.id),
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     const state = getTeamCreationState(interaction.user.id);
     state.hasData = true;
     state.teamName = name;
+    state.teamTag = teamTag;
     state.ownerId = owner.id;
     teamCreationState.set(interaction.user.id, state);
 

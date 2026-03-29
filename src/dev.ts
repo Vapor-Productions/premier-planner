@@ -9,6 +9,11 @@ import { errorHandler } from './utils/errorHandler.js';
 // Load environment variables from .env file
 config();
 
+// Allow JSON.stringify to handle BigInt values safely in dev
+(BigInt.prototype as unknown as { toJSON?: () => string }).toJSON ??= function () {
+  return this.toString();
+};
+
 // The following syntax should be used in the commonjs environment
 // const importPattern =  __dirname + "/{events,commands}/**/*.{ts,js}"
 

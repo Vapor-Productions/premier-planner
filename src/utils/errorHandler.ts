@@ -77,7 +77,7 @@ export class ErrorHandler {
    */
   public async handleError(
     error: Error | BotError,
-    interaction?: CommandInteraction,
+    interaction?: CommandInteraction | Interaction,
     context?: ErrorContext
   ): Promise<void> {
     const botError =
@@ -93,6 +93,24 @@ export class ErrorHandler {
       await sendErrorToChannel(this.client, botError);
     }
 
+    // If the original error is a Discord "Unknown interaction" (10062) or
+    // "Interaction has already been acknowledged" (40060), don't attempt to
+    // send an error reply back to the user – the token is no longer valid.
+    const cause = botError.cause as any;
+    const discordCode =
+      typeof cause?.code === 'number'
+        ? (cause.code as number)
+        : undefined;
+    if (discordCode === 10062 || discordCode === 40060) {
+      return;
+    }
+
+    // Double reply / update+reply on the same interaction (harmless user bug in flow)
+    const causeName = cause && typeof cause === 'object' && 'name' in cause ? String((cause as Error).name) : '';
+    if (causeName === 'InteractionAlreadyReplied') {
+      return;
+    }
+
     // Check if we're hitting error rate limits
     if (this.isErrorRateLimited(botError)) {
       console.warn('Error rate limit exceeded, skipping user notification');
@@ -100,7 +118,7 @@ export class ErrorHandler {
     }
 
     // Provide user feedback if interaction is available
-    if (interaction && !interaction.replied && !interaction.deferred) {
+    if (interaction) {
       await this.sendErrorResponse(interaction, botError);
     }
   }
@@ -158,32 +176,51 @@ export class ErrorHandler {
     if (context.channelId) {
       console.error(`  Channel: ${context.channelId}`);
     }
-    if (
-      error.cause &&
-      typeof error.cause === 'object' &&
-      error.cause !== null &&
-      'message' in error.cause
-    ) {
-      console.error(`  Caused by: ${(error.cause as Error).message}`);
+    if (error.cause && typeof error.cause === 'object' && error.cause !== null) {
+      const cause = error.cause as Error;
+      if ('message' in cause) {
+        console.error(`  Caused by: ${cause.message}`);
+      }
+      if (cause.stack) {
+        console.error('  Original Stack:');
+        console.error(cause.stack);
+      }
     }
     if (context.additionalData) {
       console.error(`  Additional Data:`, context.additionalData);
     }
 
-    console.error(`  Stack: ${error.stack}`);
+    if (error.stack) {
+      console.error('  Wrapped Stack:');
+      console.error(error.stack);
+    }
   }
 
   /**
    * Send error response to user
+   *
+   * Only runs for interactions that support `.reply()` and have not been acknowledged yet.
    */
-  private async sendErrorResponse(interaction: CommandInteraction, error: BotError): Promise<void> {
+  private async sendErrorResponse(interaction: CommandInteraction | Interaction, error: BotError): Promise<void> {
     try {
+      // Autocomplete interactions and some system interactions cannot be replied to with a normal message
+      if ((interaction as any).isAutocomplete?.()) {
+        return;
+      }
+
+      // Ensure reply function exists (e.g. ChatInputCommand, Button, ModalSubmit, etc.)
+      const base = interaction as any;
+      const canReply = typeof base.reply === 'function';
+      if (!canReply || base.replied || base.deferred) {
+        return;
+      }
+
       const truncate = (text: string, max = 1000): string => {
         if (!text) return '';
         return text.length > max ? `${text.slice(0, max - 3)}...` : text;
       };
 
-      const userId = interaction.user?.id;
+      const userId = base.user?.id;
       const defaultLocale = getDefaultLocale();
       const get = (key: string) =>
         userId ? tWithUser(key, userId) : Promise.resolve(t(key, defaultLocale));
@@ -227,7 +264,7 @@ export class ErrorHandler {
         );
       }
 
-      await interaction.reply({
+      await base.reply({
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
@@ -373,7 +410,13 @@ export async function sendErrorToChannel(client: Client, error: BotError): Promi
           { name: 'Message', value: error.message, inline: false },
           {
             name: 'Context',
-            value: JSON.stringify(error.context, null, 2).slice(0, 1000) || 'None',
+            value:
+              Object.keys(error.context).length > 0
+                ? Object.entries(error.context)
+                    .map(([key, value]) => `• ${key}: ${String(value)}`)
+                    .join('\n')
+                    .slice(0, 1000)
+                : 'None',
             inline: false,
           }
         )

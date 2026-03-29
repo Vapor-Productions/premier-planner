@@ -5,9 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider   = "prisma-client-js"
-  output     = "../src/generated/prisma"
-  engineType = "binary"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -29,6 +28,7 @@ model User {
 model Team {
   id        String   @id @default(uuid())
   name      String
+  teamTag   String   @default("")
   guildId   String
   leader    User?    @relation("TeamLeader", fields: [leaderId], references: [discordId])
   members   User[]   @relation("TeamMembers")
@@ -37,4 +37,5 @@ model Team {
   updatedAt DateTime @updatedAt
 
   @@index([guildId])
+  @@unique([name, teamTag])
 }

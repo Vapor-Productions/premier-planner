@@ -11,7 +11,9 @@
         "noExplicitAny": "warn"
       },
       "style": {
-        "useConst": "error"
+        "useConst": "error",
+        "useSortedImports": "off",
+        "useSortedExports": "off"
       }
     }
   },

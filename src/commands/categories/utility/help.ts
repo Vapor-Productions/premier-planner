@@ -26,6 +26,7 @@ const categoryEmojis: Record<string, string> = {
   moderation: '🔨',
   fun: '🎉',
   information: '💡',
+  valorant: '🎮',
 };
 
 /**
@@ -242,7 +243,7 @@ async function handleSelectMenu(
 }
 
 @Discord()
-@Category('Miscellaneous')
+@Category('Utility')
 export class Help {
   constructor() {
     // Bind methods

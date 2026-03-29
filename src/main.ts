@@ -9,6 +9,11 @@ import { closePrismaConnection } from './utils/userManager.js';
 // Load environment variables from .env file
 config();
 
+// Allow JSON.stringify to handle BigInt values safely
+(BigInt.prototype as unknown as { toJSON?: () => string }).toJSON ??= function () {
+  return this.toString();
+};
+
 async function run() {
   // Setup global error handlers
   setupGlobalErrorHandlers();

@@ -1,4 +1,4 @@
-import type { User } from '../generated/prisma';
+import type { User } from '../generated/prisma/client.js';
 import { prisma } from './prisma.js';
 
 export interface UserData {

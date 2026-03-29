@@ -111,6 +111,7 @@ export const locales = {
         alreadyInTeam: 'Een of meer geselecteerde leden zitten al in een team.',
         teamLeaderCannotBeAdded: 'De teamleider kan niet als lid worden toegevoegd.',
         teamAlreadyExists: 'Er bestaat al een team met deze naam in deze server.',
+        premierTeamNotFound: 'Er is geen Premier-team gevonden met deze naam en tag. Controleer de gegevens en probeer het opnieuw.',
       },
       fetchData: {
         description: 'Haal alle data op uit de SheetDB API.',
@@ -266,6 +267,7 @@ export const locales = {
         alreadyInTeam: 'One or more selected members are already in a team.',
         teamLeaderCannotBeAdded: 'The team leader cannot be added as a member.',
         teamAlreadyExists: 'A team with this name already exists in this server.',
+        premierTeamNotFound: 'No Premier team was found with this name and tag. Check the details and try again.',
       },
       fetchData: {
         description: 'Fetch all data from the SheetDB API.',
