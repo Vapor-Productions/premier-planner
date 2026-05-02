@@ -10,7 +10,7 @@ The bot automatically ensures that all users who execute commands are registered
 
 ### Automatic User Registration
 
-1. **Event Handler Integration**: The user management is integrated into the main event handlers in `src/events/common.ts`
+1. **Event Handler Integration**: The user management runs from `src/events/messageCreate.ts` and `src/events/interactionCreate.ts` before commands execute
 2. **Automatic Check**: Every time a user executes a command (via message or interaction), the system automatically checks if they exist in the database
 3. **Automatic Creation**: If the user doesn't exist, a new database entry is created automatically
 4. **Username Updates**: If the user exists but their username has changed, it's automatically updated
