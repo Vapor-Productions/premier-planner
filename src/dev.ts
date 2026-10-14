@@ -1,15 +1,13 @@
+// Load .env before any import below: utils/prisma.ts reads DATABASE_URL when it is imported
+import 'dotenv/config';
 import { dirname, resolve } from '@discordx/importer';
 import chokidar from 'chokidar';
 import { DIService, MetadataStorage } from 'discordx';
-import { config } from 'dotenv';
 
 import { bot } from './bot.js';
 import { errorHandler } from './utils/errorHandler.js';
 import { startRiotLinkServer } from './utils/riot/linkServer.js';
 import { registerGracefulShutdown } from './utils/shutdown.js';
-
-// Load environment variables from .env file
-config();
 
 // Allow JSON.stringify to handle BigInt values safely in dev
 (BigInt.prototype as unknown as { toJSON?: () => string }).toJSON ??= function (this: bigint) {
@@ -92,4 +90,8 @@ async function run() {
   }
 }
 
-void run();
+// A failed start must exit non-zero, or a supervisor (Docker restart policy) never restarts the bot
+run().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
