@@ -171,7 +171,7 @@ export class TeamCommands {
     if (!guildId) {
       await interaction.reply({
         content: 'This command can only be used in a guild.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -186,7 +186,7 @@ export class TeamCommands {
       },
     });
     if (!teamRow) {
-      await interaction.reply({ content: 'Team not found', ephemeral: true });
+      await interaction.reply({ content: 'Team not found', flags: MessageFlags.Ephemeral });
       return;
     }
 
