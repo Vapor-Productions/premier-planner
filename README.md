@@ -179,15 +179,15 @@ yarn start
 ## Docker
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up --build
+# Build and run with a local Postgres (the schema is applied on start)
+docker compose up --build
 ```
 
 ## Scripts
 
 - `yarn dev` - Start development server with hot reload
 - `yarn watch` - Watch for file changes
-- `yarn build` - Build the project
+- `yarn build` - Clear `build/`, generate the Prisma client and compile
 - `yarn start` - Start production server
 - `yarn lint` - Run Biome linting
 - `yarn lint:fix` - Fix Biome linting errors
