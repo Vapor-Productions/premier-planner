@@ -6,6 +6,7 @@ import { config } from 'dotenv';
 import { bot } from './bot.js';
 import { errorHandler } from './utils/errorHandler.js';
 import { startRiotLinkServer } from './utils/riot/linkServer.js';
+import { registerGracefulShutdown } from './utils/shutdown.js';
 
 // Load environment variables from .env file
 config();
@@ -70,6 +71,9 @@ async function run() {
   if (!process.env.DISCORD_TOKEN) {
     throw Error('Could not find DISCORD_TOKEN in your environment');
   }
+
+  // Handle graceful shutdown (Riot link server, client destroy, Prisma disconnect, exit)
+  registerGracefulShutdown(bot);
 
   // Log in with your bot token
   await bot.login(process.env.DISCORD_TOKEN);

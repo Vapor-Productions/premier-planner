@@ -3,9 +3,8 @@ import { config } from 'dotenv';
 
 import { bot } from './bot.js';
 import { errorHandler, setupGlobalErrorHandlers } from './utils/errorHandler.js';
-import { getDefaultLocale, t } from './utils/localization.js';
-import { startRiotLinkServer, stopRiotLinkServer } from './utils/riot/linkServer.js';
-import { closePrismaConnection } from './utils/userManager.js';
+import { startRiotLinkServer } from './utils/riot/linkServer.js';
+import { registerGracefulShutdown } from './utils/shutdown.js';
 
 // Load environment variables from .env file
 config();
@@ -31,6 +30,9 @@ async function run() {
     throw Error('Could not find DISCORD_TOKEN in your environment');
   }
 
+  // Handle graceful shutdown (Riot link server, client destroy, Prisma disconnect, exit)
+  registerGracefulShutdown(bot);
+
   // Log in with your bot token
   await bot.login(process.env.DISCORD_TOKEN);
 
@@ -42,20 +44,6 @@ async function run() {
   // Set the client for error reporting
   errorHandler.setClient(bot);
 
-  // Handle graceful shutdown
-  process.on('SIGINT', async () => {
-    console.log(t('bot.shutdown', getDefaultLocale()));
-    await stopRiotLinkServer();
-    await closePrismaConnection();
-    process.exit(0);
-  });
-
-  process.on('SIGTERM', async () => {
-    console.log(t('bot.shutdown', getDefaultLocale()));
-    await stopRiotLinkServer();
-    await closePrismaConnection();
-    process.exit(0);
-  });
 }
 
 void run();
