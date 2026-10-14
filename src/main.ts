@@ -38,7 +38,6 @@ async function run() {
 
   // Set the client for error reporting
   errorHandler.setClient(bot);
-
 }
 
 // A failed start must exit non-zero, or a supervisor (Docker restart policy) never restarts the bot
