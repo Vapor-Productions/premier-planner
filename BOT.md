@@ -33,19 +33,19 @@ Built from `bot-template` (discordx 11, Prisma **7** with `@prisma/adapter-pg`, 
 The template defects were fixed on branch `fix/template-defects` (2026-10-14); `USER_MANAGEMENT.md` now describes this bot.
 
 ## Intents
-Guilds and **GuildMembers (privileged)**. The member lookups in `team.ts` use `guild.members.fetch(id)`, which is a REST call, so GuildMembers may be removable too *(check before dropping it)*.
+Guilds only, no privileged intents. The member lookups in `team.ts` use `guild.members.fetch(id)`, a REST call that needs no intent, so GuildMembers was dropped (2026-10-14).
 
 ## Env vars
 `.env.example`, `src/types/environment.d.ts` and the README table list the same set: `DISCORD_TOKEN`, `DATABASE_URL`, `ERROR_LOG_CHANNEL_ID`, `NODE_ENV`, `DEV_GUILD_IDS`, `BOT_DEV_IDS`, `DEBUG_MODE`, `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET` (falls back to `RIOT_API_KEY`), `RIOT_REDIRECT_URI`, `RIOT_LINK_PORT`, `RIOT_LINK_BIND_HOST`, `VAL_API_KEY`, `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.
 
 ## Data model
-PostgreSQL through Prisma 7 (`db push`). With real user data, migrations would be the safer choice.
+PostgreSQL through Prisma 7 with migrations in `prisma/migrations` (`0_init` is the baseline). Production runs `yarn start:migrate`, which applies pending migrations with `prisma migrate deploy` before starting.
 - `User`: discordId, username, language, Riot PUUID, game name, tag line and link date
 - `Team`: name, teamTag, guildId and leader, unique on (name, teamTag)
 - `TeamMember`: join table between Team and User, with cascade delete
 
 ## Hosting
-Docker Compose with app and postgres:16 is for local runs: it applies the schema and binds Postgres to localhost. The RSO callback needs a public URL that matches `RIOT_REDIRECT_URI`. *(fill in the host)*
+Docker Compose with app and postgres:16 is for local runs: it applies migrations and binds Postgres to localhost. The RSO callback needs a public URL that matches `RIOT_REDIRECT_URI`. *(fill in the host)*
 
 ## Decisions made
 - Riot accounts are linked through official RSO, with a manual backup and verification path for bot devs.
