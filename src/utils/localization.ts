@@ -59,7 +59,7 @@ export const locales = {
       },
       help: {
         description: "Toon alle beschikbare commando's.",
-        title: "NightMT Bot Commando's",
+        title: "Premier Planner Commando's",
         category: 'Categorie',
         usage: 'Gebruik',
         commandCenter: '{botName} Command Center',
@@ -265,7 +265,7 @@ export const locales = {
       },
       help: {
         description: 'Show all available commands.',
-        title: 'NightMT Bot Commands',
+        title: 'Premier Planner Commands',
         category: 'Category',
         usage: 'Usage',
         commandCenter: '{botName} Command Center',
@@ -451,7 +451,7 @@ export async function tWithUser(
   params?: Record<string, string>
 ): Promise<string> {
   try {
-    const { getUserByDiscordId } = await import('./userManager');
+    const { getUserByDiscordId } = await import('./userManager.js');
     const user = await getUserByDiscordId(userId);
     const userLocale = (user?.language as Locale) || getDefaultLocale();
     return t(key, userLocale, params);

@@ -26,19 +26,17 @@ Built from `bot-template` (discordx 11, Prisma **7** with `@prisma/adapter-pg`, 
 | Database | Kept, schema replaced (User, Team, TeamMember) |
 | Localization | Kept (`/language`, `User.language`, default `en`) |
 | SheetDB | Removed |
-| Prefix commands | `messageCreate.ts` and the MessageContent intent still present. *(Needed?)* |
+| Prefix commands | Removed (no `@SimpleCommand` existed), with `messageCreate.ts` and the intents only it used |
 | Error log channel | Kept |
 | Docker | Kept (app + postgres:16) |
 
-`USER_MANAGEMENT.md` from the template is still in the repo (defect #10). The other defects haven't been re-checked.
+The template defects were fixed on branch `fix/template-defects` (2026-10-14); `USER_MANAGEMENT.md` now describes this bot.
 
 ## Intents
-Guilds, GuildMessages, GuildMessageReactions, GuildVoiceStates, **GuildMembers (privileged)**, **MessageContent (privileged)**. GuildVoiceStates and MessageContent are probably unused.
+Guilds and **GuildMembers (privileged)**. The member lookups in `team.ts` use `guild.members.fetch(id)`, which is a REST call, so GuildMembers may be removable too *(check before dropping it)*.
 
 ## Env vars
-In `.env.example`: `DISCORD_CLIENT_ID`, `DISCORD_GUILD_ID`, `DISCORD_TOKEN`, `DATABASE_URL`, `ERROR_LOG_CHANNEL_ID`, `NODE_ENV`, `DEV_GUILD_IDS`, `BOT_DEV_IDS`, `DEBUG_MODE`.
-
-**Read by the code but missing from `.env.example`:** `RIOT_API_KEY`, `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET`, `RIOT_REDIRECT_URI`, `RIOT_LINK_BIND_HOST`, `VAL_API_KEY`, `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.
+`.env.example`, `src/types/environment.d.ts` and the README table list the same set: `DISCORD_TOKEN`, `DATABASE_URL`, `ERROR_LOG_CHANNEL_ID`, `NODE_ENV`, `DEV_GUILD_IDS`, `BOT_DEV_IDS`, `DEBUG_MODE`, `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET` (falls back to `RIOT_API_KEY`), `RIOT_REDIRECT_URI`, `RIOT_LINK_BIND_HOST`, `VAL_API_KEY`, `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.
 
 ## Data model
 PostgreSQL through Prisma 7 (`db push`). With real user data, migrations would be the safer choice.
@@ -47,7 +45,7 @@ PostgreSQL through Prisma 7 (`db push`). With real user data, migrations would b
 - `TeamMember`: join table between Team and User, with cascade delete
 
 ## Hosting
-Docker Compose with app and postgres:16. The RSO callback needs a public URL that matches `RIOT_REDIRECT_URI`. *(fill in the host)*
+Docker Compose with app and postgres:16 is for local runs: it applies the schema and binds Postgres to localhost. The RSO callback needs a public URL that matches `RIOT_REDIRECT_URI`. *(fill in the host)*
 
 ## Decisions made
 - Riot accounts are linked through official RSO, with a manual backup and verification path for bot devs.

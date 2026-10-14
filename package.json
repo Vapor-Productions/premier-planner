@@ -1,21 +1,22 @@
 {
-  "name": "template",
+  "name": "premier-planner",
   "version": "0.0.1",
   "private": true,
   "license": "MIT",
   "type": "module",
   "main": "build/main.js",
   "scripts": {
-    "setup:prod": "yarn --omit=dev && yarn prisma:generate && yarn prisma:push",
+    "prepare": "node scripts/setup-hooks.cjs",
+    "setup:prod": "yarn install --production && yarn prisma:generate && yarn prisma:push",
     "setup": "yarn && yarn prisma:generate && yarn prisma:push",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "build": "tsc",
+    "build": "node -e \"require('fs').rmSync('build',{recursive:true,force:true})\" && prisma generate && tsc",
     "dev": "tsx src/dev.ts",
     "watch": "nodemon --ext ts,js,mjs,cjs,json --exec yarn dev",
     "biome:fix": "biome check --write . && biome format --write .",
     "start": "node build/main.js",
-    "start:prod": "tsc && node build/main.js",
+    "start:prod": "yarn build && node build/main.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format .",
@@ -23,7 +24,7 @@
   },
   "dependencies": {
     "@discordx/importer": "^1.3.1",
-    "@discordx/utilities": "^7.0.5",
+    "@discordx/utilities": "^8.0.0",
     "@prisma/adapter-pg": "7",
     "@prisma/client": "7",
     "axios": "^1.12.2",
@@ -37,13 +38,13 @@
     "@biomejs/biome": "^2.0.6",
     "@types/node": "^22.10.10",
     "@types/pg": "^8.18.0",
-    "chokidar": "^4.0.3",
+    "chokidar": "^5",
+    "nodemon": "^3.1.14",
     "tsx": "^4.20.3",
     "typescript": "5.7.3"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=7.0.0"
+    "node": ">=20.19.0"
   },
   "ts-node": {
     "esm": true,

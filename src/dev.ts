@@ -1,14 +1,13 @@
+// Load .env before any import below: utils/prisma.ts reads DATABASE_URL when it is imported
+import 'dotenv/config';
 import { dirname, resolve } from '@discordx/importer';
 import chokidar from 'chokidar';
 import { DIService, MetadataStorage } from 'discordx';
-import { config } from 'dotenv';
 
 import { bot } from './bot.js';
 import { errorHandler } from './utils/errorHandler.js';
 import { startRiotLinkServer } from './utils/riot/linkServer.js';
-
-// Load environment variables from .env file
-config();
+import { registerGracefulShutdown } from './utils/shutdown.js';
 
 // Allow JSON.stringify to handle BigInt values safely in dev
 (BigInt.prototype as unknown as { toJSON?: () => string }).toJSON ??= function (this: bigint) {
@@ -61,7 +60,13 @@ async function Reload() {
  * Initialize
  */
 async function run() {
-  const watcher = chokidar.watch(importPattern);
+  // chokidar 4+ has no glob support: handed the import glob, it matched nothing and hot reload
+  // silently never fired. Watch the folders and filter by extension instead.
+  const root = dirname(import.meta.url);
+  const watcher = chokidar.watch([`${root}/events`, `${root}/commands`], {
+    ignoreInitial: true,
+    ignored: (path, stats) => !!stats?.isFile() && !/\.(ts|js)$/.test(path),
+  });
 
   // Load commands
   await LoadFiles(importPattern);
@@ -70,6 +75,9 @@ async function run() {
   if (!process.env.DISCORD_TOKEN) {
     throw Error('Could not find DISCORD_TOKEN in your environment');
   }
+
+  // Handle graceful shutdown (Riot link server, client destroy, Prisma disconnect, exit)
+  registerGracefulShutdown(bot);
 
   // Log in with your bot token
   await bot.login(process.env.DISCORD_TOKEN);
@@ -88,4 +96,8 @@ async function run() {
   }
 }
 
-void run();
+// A failed start must exit non-zero, or a supervisor (Docker restart policy) never restarts the bot
+run().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -1,14 +1,11 @@
+// Load .env before any import below: utils/prisma.ts reads DATABASE_URL when it is imported
+import 'dotenv/config';
 import { dirname, importx } from '@discordx/importer';
-import { config } from 'dotenv';
 
 import { bot } from './bot.js';
 import { errorHandler, setupGlobalErrorHandlers } from './utils/errorHandler.js';
-import { getDefaultLocale, t } from './utils/localization.js';
-import { startRiotLinkServer, stopRiotLinkServer } from './utils/riot/linkServer.js';
-import { closePrismaConnection } from './utils/userManager.js';
-
-// Load environment variables from .env file
-config();
+import { startRiotLinkServer } from './utils/riot/linkServer.js';
+import { registerGracefulShutdown } from './utils/shutdown.js';
 
 // Allow JSON.stringify to handle BigInt values safely
 (BigInt.prototype as unknown as { toJSON?: () => string }).toJSON ??= function (this: bigint) {
@@ -31,31 +28,20 @@ async function run() {
     throw Error('Could not find DISCORD_TOKEN in your environment');
   }
 
+  // Handle graceful shutdown (Riot link server, client destroy, Prisma disconnect, exit)
+  registerGracefulShutdown(bot);
+
   // Log in with your bot token
   await bot.login(process.env.DISCORD_TOKEN);
 
   startRiotLinkServer();
 
-  // Delete global commands on startup
-  await bot.clearApplicationCommands(...bot.guilds.cache.map((g) => g.id));
-
   // Set the client for error reporting
   errorHandler.setClient(bot);
-
-  // Handle graceful shutdown
-  process.on('SIGINT', async () => {
-    console.log(t('bot.shutdown', getDefaultLocale()));
-    await stopRiotLinkServer();
-    await closePrismaConnection();
-    process.exit(0);
-  });
-
-  process.on('SIGTERM', async () => {
-    console.log(t('bot.shutdown', getDefaultLocale()));
-    await stopRiotLinkServer();
-    await closePrismaConnection();
-    process.exit(0);
-  });
 }
 
-void run();
+// A failed start must exit non-zero, or a supervisor (Docker restart policy) never restarts the bot
+run().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

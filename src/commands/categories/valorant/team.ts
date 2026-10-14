@@ -171,7 +171,7 @@ export class TeamCommands {
     if (!guildId) {
       await interaction.reply({
         content: 'This command can only be used in a guild.',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -186,7 +186,7 @@ export class TeamCommands {
       },
     });
     if (!teamRow) {
-      await interaction.reply({ content: 'Team not found', ephemeral: true });
+      await interaction.reply({ content: 'Team not found', flags: MessageFlags.Ephemeral });
       return;
     }
 
@@ -206,7 +206,7 @@ export class TeamCommands {
     };
 
     const userId = interaction.user.id;
-    let premierNote = 'Premier team could not be verified.';
+    let premierNote: string;
     let roster: Set<string> | null = null;
     try {
       const lookup = await fetchPremierRosterLookup(team.name, team.teamTag ?? '');

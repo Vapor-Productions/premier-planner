@@ -116,21 +116,22 @@ A Discord bot template built with [discordx](https://discordx.js.org) and TypeSc
 
 ## Environment Variables
 
-Create a `.env` file in the root directory with the following variables:
+Copy `.env.example` to `.env` and fill it in. Only `DISCORD_TOKEN` and `DATABASE_URL` are required; the rest switch features on.
 
-```properties
-# Discord Bot Token
-DISCORD_TOKEN=your_discord_bot_token_here
-
-# Database URL (for Prisma)
-DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
-
-# Error Log Channel ID (optional - for error reporting to Discord)
-ERROR_LOG_CHANNEL_ID=123456789012345678
-
-# Environment
-NODE_ENV=development
-```
+| Variable | Required | What it does |
+|---|---|---|
+| `DISCORD_TOKEN` | yes | Bot token |
+| `DATABASE_URL` | yes | PostgreSQL connection string for Prisma |
+| `ERROR_LOG_CHANNEL_ID` | no | Channel that receives error reports |
+| `NODE_ENV` | no | `production` registers commands globally; anything else uses `DEV_GUILD_IDS` |
+| `DEV_GUILD_IDS` | no | Comma-separated guild IDs for command registration outside production |
+| `BOT_DEV_IDS` | no | Comma-separated user IDs allowed to use privileged commands without Administrator |
+| `DEBUG_MODE` | no | `1` / `true` / `yes` / `on` for verbose logs |
+| `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET`, `RIOT_REDIRECT_URI` | for `/riot link` | Riot Sign-On credentials and the public callback URL. `RIOT_CLIENT_SECRET` falls back to `RIOT_API_KEY` |
+| `RIOT_LINK_BIND_HOST` | no | Interface the callback server binds to (default `0.0.0.0`); the port and path come from `RIOT_REDIRECT_URI` |
+| `VAL_API_KEY` | for `/riot link-backup` | HenrikDev Valorant API key, also sent with Premier lookups when set |
+| `MAINTENANCE_MODE` | no | `1` pauses every command that checks maintenance |
+| `MAINTENANCE_COMMANDS` | no | Comma-separated command ids to pause, e.g. `riot.link,riot.link-backup` |
 
 ## Error Logging to Discord Channel
 
@@ -178,15 +179,15 @@ yarn start
 ## Docker
 
 ```bash
-# Build and run with Docker Compose
-docker-compose up --build
+# Build and run with a local Postgres (the schema is applied on start)
+docker compose up --build
 ```
 
 ## Scripts
 
 - `yarn dev` - Start development server with hot reload
 - `yarn watch` - Watch for file changes
-- `yarn build` - Build the project
+- `yarn build` - Clear `build/`, generate the Prisma client and compile
 - `yarn start` - Start production server
 - `yarn lint` - Run Biome linting
 - `yarn lint:fix` - Fix Biome linting errors
