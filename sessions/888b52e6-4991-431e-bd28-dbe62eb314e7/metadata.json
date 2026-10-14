@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "sessionId": "888b52e6-4991-431e-bd28-dbe62eb314e7",
+  "model": "grok-4.7-high",
+  "startedAt": "2026-10-14T22:14:01.579Z",
+  "endedAt": "2026-10-14T22:42:30.604Z",
+  "durationMs": 1708984,
+  "status": "running",
+  "tokens": {
+    "total": 0,
+    "input": 0,
+    "output": 0
+  },
+  "cost": {
+    "usd": 0
+  },
+  "toolCalls": 144,
+  "lines": {
+    "added": 223,
+    "removed": 46
+  },
+  "filesChanged": [
+    "src/utils/riot/compliance.ts",
+    "src/utils/riot/rso.ts",
+    "src/commands/categories/valorant/link.ts",
+    "src/commands/categories/owner/riotOwner.ts",
+    "src/utils/riot/linkServer.ts",
+    "src/utils/botDev.ts",
+    "src/utils/localization.ts",
+    ".env.example",
+    "BOT.md",
+    "src/types/environment.d.ts",
+    "src/utils/userManager.ts",
+    "src/utils/maintenance.ts"
+  ],
+  "git": {
+    "branch": "wip/rso-linking",
+    "headBefore": "c6bc0bdd66bc7b0b406cde62f22fd94f5259f210",
+    "headAfter": "09347811206b418769d4bd12decc5eba6f2a8ea5",
+    "commitShas": [
+      "09347811206b418769d4bd12decc5eba6f2a8ea5"
+    ]
+  },
+  "summary": "I'll find how Premier Planner is hosted and get the bot deployed so you can test `/riot link`.",
+  "originUrl": "https://getorigin.io/sessions/888b52e6-4991-431e-bd28-dbe62eb314e7"
+}
