@@ -8,7 +8,8 @@ const AUTH_AUTHORIZE = 'https://auth.riotgames.com/authorize';
 const AUTH_TOKEN = 'https://auth.riotgames.com/token';
 const ACCOUNT_ME = 'https://americas.api.riotgames.com/riot/account/v1/accounts/me';
 
-const RSO_SCOPE = 'openid';
+/** Riot VALORANT docs: authorize with `openid` + `offline_access`. */
+const RSO_SCOPE = 'openid offline_access';
 
 export interface RiotOAuthConfig {
   clientId: string;

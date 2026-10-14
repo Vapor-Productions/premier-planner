@@ -11,11 +11,13 @@ import { isBotDevUser } from '../../../utils/botDev.js';
 import { tWithUser } from '../../../utils/localization.js';
 import { isCommandInMaintenance, MaintenanceCommandId } from '../../../utils/maintenance.js';
 import { fetchValorantAccountByRiotId } from '../../../utils/premierApi.js';
+import { isNonRsoLinkAllowed } from '../../../utils/riot/compliance.js';
 import { ensureUserExists, saveLinkedRiotAccount } from '../../../utils/userManager.js';
 
 /**
  * Owner category: dev-only Riot subcommands (`BOT_DEV_IDS` at runtime; default Administrator so Discord hides
  * the command from non-admins; same `/riot` group; hidden from `/help`).
+ * Non-RSO linking is disabled in production (Riot VALORANT opt-in policy).
  */
 @Discord()
 @Category('Owner')
@@ -53,9 +55,9 @@ export class RiotOwnerCommands {
   ): Promise<void> {
     const userId = interaction.user.id;
 
-    if (!isBotDevUser(interaction.user.id)) {
+    if (!isNonRsoLinkAllowed() || !isBotDevUser(interaction.user.id)) {
       await interaction.reply({
-        content: await tWithUser('commands.riot.botDevOnly', userId),
+        content: await tWithUser('commands.riot.linkVerify.disabled', userId),
         flags: MessageFlags.Ephemeral,
       });
       return;

@@ -141,29 +141,40 @@ export const locales = {
         link: {
           description: 'Koppel je Riot-account via Riot Sign-On.',
           title: 'Riot-account koppelen',
+          disclaimer:
+            '**Belangrijk (opt-in):** Door je Riot-account te koppelen maak je je Riot-identiteit (Riot ID) en teamlidmaatschap-status zichtbaar voor leden van Discord-servers waar je Premier Planner gebruikt. Koppel alleen als je daarmee akkoord gaat.',
           instructions:
-            'Open de onderstaande link, log in bij Riot en keer terug naar Discord wanneer je klaar bent. De sessie verloopt na 15 minuten.',
+            'Tik op de knop hieronder, log in bij Riot Sign-On en keer terug naar Discord wanneer je klaar bent. De sessie verloopt na 15 minuten.',
+          privacyUrl: 'Privacybeleid: https://docs.premierplanner.eu/legal/privacy-policy',
           openAuthorize: 'Inloggen bij Riot',
           notConfigured:
             'Riot Sign-On is niet geconfigureerd. Zet RIOT_CLIENT_ID, RIOT_CLIENT_SECRET en RIOT_REDIRECT_URI in de omgeving en start de bot opnieuw.',
           unavailable:
             'Riot-accounts koppelen is nog niet beschikbaar op deze bot. Vraag een serverbeheerder om hulp.',
-          redirectToBackup:
-            'Gebruik {mention} om je Riot-account te koppelen met je in-game naam en tag (HenrikDev).',
+        },
+        unlink: {
+          description: 'Ontkoppel je Riot-account van Premier Planner.',
+          success:
+            'Je Riot-account is ontkoppeld. Je Riot ID en roosterstatus worden niet meer gebruikt voor Premier Planner-functies. Je kunt later opnieuw koppelen met `/riot link`.',
+          notLinked: 'Er is geen Riot-account gekoppeld aan je Discord-gebruiker.',
         },
         linkBackup: {
-          description: 'Reserve: koppel je Riot-account via Riot ID (HenrikDev API).',
+          description: 'Alleen development: koppel via Riot ID (uitgeschakeld in productie).',
+          disabled:
+            'Niet-RSO-koppeling is uitgeschakeld. Gebruik `/riot link` om via officiële Riot Sign-On te koppelen (vereist door Riot VALORANT-beleid).',
           gameName: 'In-game naam (voor #)',
           tag: 'Riot-tag (na #)',
           noApiKey:
             'VAL_API_KEY ontbreekt. Zet je HenrikDev API-sleutel in de omgeving om dit commando te gebruiken.',
           notFound: 'Geen Valorant-account gevonden voor deze naam en tag.',
           puuidTaken: 'Deze Riot-account is al gekoppeld aan een andere Discord-gebruiker.',
-          success: 'Riot-account gekoppeld als **{name}#{tag}** (HenrikDev-reserve).',
+          success: 'Riot-account gekoppeld als **{name}#{tag}** (alleen development, niet-RSO).',
           apiError: 'HenrikDev-accountlookup mislukt. Probeer het later opnieuw.',
         },
         linkVerify: {
-          description: 'Koppel handmatig het Riot-account van een lid (alleen BOT_DEV_IDS).',
+          description: 'Alleen development: koppel handmatig een lid (uitgeschakeld in productie).',
+          disabled:
+            'Handmatig koppelen zonder RSO is uitgeschakeld. De speler moet zelf `/riot link` gebruiken.',
           success: '{target} gekoppeld als **{name}#{tag}**.',
           targetIsBot: 'Je kunt geen bot-account koppelen.',
         },
@@ -346,29 +357,40 @@ export const locales = {
         link: {
           description: 'Link your Riot account via Riot Sign-On.',
           title: 'Link Riot account',
+          disclaimer:
+            '**Important (opt-in):** By linking your Riot account, you make your Riot identity (Riot ID) and team membership status visible to members of Discord servers where you use Premier Planner. Only continue if you agree.',
           instructions:
-            'Open the link below, sign in with Riot, then return to Discord when done. The session expires after 15 minutes.',
+            'Tap the button below, sign in with Riot Sign-On, then return to Discord when done. The session expires after 15 minutes.',
+          privacyUrl: 'Privacy policy: https://docs.premierplanner.eu/legal/privacy-policy',
           openAuthorize: 'Sign in with Riot',
           notConfigured:
             'Riot Sign-On is not configured. Set RIOT_CLIENT_ID, RIOT_CLIENT_SECRET and RIOT_REDIRECT_URI in the environment and restart the bot.',
           unavailable:
             'Linking a Riot account is not available on this bot yet. Ask a server admin for help.',
-          redirectToBackup:
-            'Use {mention} to link your Riot account with your in-game name and tag (HenrikDev).',
+        },
+        unlink: {
+          description: 'Unlink your Riot account from Premier Planner.',
+          success:
+            'Your Riot account has been unlinked. Your Riot ID and roster status are no longer used for Premier Planner features. You can link again later with `/riot link`.',
+          notLinked: 'No Riot account is linked to your Discord user.',
         },
         linkBackup: {
-          description: 'Backup: link your Riot account using Riot ID (HenrikDev API).',
+          description: 'Dev-only emergency: link via Riot ID (disabled in production).',
+          disabled:
+            'Non-RSO linking is disabled. Use `/riot link` to link through official Riot Sign-On (required by Riot VALORANT policy).',
           gameName: 'In-game name (before #)',
           tag: 'Riot tag (after #)',
           noApiKey:
             'VAL_API_KEY is not set. Add your HenrikDev API key to the environment to use this command.',
           notFound: 'No Valorant account was found for that name and tag.',
           puuidTaken: 'This Riot account is already linked to another Discord user.',
-          success: 'Riot account linked as **{name}#{tag}** (Henrik backup).',
+          success: 'Riot account linked as **{name}#{tag}** (development non-RSO only).',
           apiError: 'HenrikDev account lookup failed. Please try again later.',
         },
         linkVerify: {
-          description: 'Manually link a user Riot account (BOT_DEV_IDS only).',
+          description: 'Dev-only: manually link a member (disabled in production).',
+          disabled:
+            'Manual linking without RSO is disabled. The player must use `/riot link` themselves.',
           success: 'Linked {target} as **{name}#{tag}**.',
           targetIsBot: 'Cannot link a bot account.',
         },
