@@ -6,8 +6,8 @@ services:
     environment:
       # Overrides .env so the app talks to the db service below
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
-    # Apply the schema to the fresh database before starting
-    command: sh -c "npx prisma db push && node build/main.js"
+    # Apply pending migrations before starting
+    command: sh -c "npx prisma migrate deploy && node build/main.js"
     restart: unless-stopped
     depends_on:
       db:

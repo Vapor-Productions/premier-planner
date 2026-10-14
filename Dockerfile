@@ -32,7 +32,7 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --production --frozen-lockfile --ignore-scripts && yarn cache clean
 
-# The schema and config let `prisma db push` run from this image (docker-compose does)
+# The schema, migrations and config let `prisma migrate deploy` run from this image
 COPY prisma ./prisma
 COPY prisma.config.ts ./
 

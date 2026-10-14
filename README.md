@@ -153,8 +153,8 @@ yarn install
 # Generate Prisma client
 yarn prisma generate
 
-# Run database migrations
-yarn prisma migrate dev
+# Apply database migrations
+yarn prisma:migrate
 ```
 
 ## Development
@@ -180,7 +180,7 @@ yarn start
 ## Docker
 
 ```bash
-# Build and run with a local Postgres (the schema is applied on start)
+# Build and run with a local Postgres (migrations are applied on start)
 docker compose up --build
 ```
 
@@ -190,6 +190,9 @@ docker compose up --build
 - `yarn watch` - Watch for file changes
 - `yarn build` - Clear `build/`, generate the Prisma client and compile
 - `yarn start` - Start production server
+- `yarn start:migrate` - Apply pending migrations, then start (use this as the panel startup command)
+- `yarn prisma:migrate` - Apply pending migrations (`prisma migrate deploy`)
+- `yarn prisma migrate dev --name <change>` - Create a new migration after editing `prisma/schema.prisma`
 - `yarn lint` - Run Biome linting
 - `yarn lint:fix` - Fix Biome linting errors
 - `yarn format` - Format code with Biome
