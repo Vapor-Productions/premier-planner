@@ -71,9 +71,23 @@ function htmlPage(title: string, body: string): string {
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>${title}</title></head><body>${body}</body></html>`;
 }
 
+/**
+ * Where the callback server listens. The path always comes from `RIOT_REDIRECT_URI`. The port
+ * comes from `RIOT_LINK_PORT` when set: behind an HTTPS reverse proxy the public URL has no port
+ * (443) while the bot listens on the host's allocated port, and deriving it from the URL would
+ * make the bot try to bind 443 itself.
+ */
 function parseRedirectParts(redirectUri: string): { port: number; pathname: string } {
   const u = new URL(redirectUri);
-  const port = u.port !== '' ? Number(u.port) : u.protocol === 'https:' ? 443 : 80;
+  const override = Number(process.env.RIOT_LINK_PORT?.trim());
+  const port =
+    Number.isInteger(override) && override > 0
+      ? override
+      : u.port !== ''
+        ? Number(u.port)
+        : u.protocol === 'https:'
+          ? 443
+          : 80;
   return { port, pathname: u.pathname || '/' };
 }
 
