@@ -206,7 +206,7 @@ export class TeamCommands {
     };
 
     const userId = interaction.user.id;
-    let premierNote = 'Premier team could not be verified.';
+    let premierNote: string;
     let roster: Set<string> | null = null;
     try {
       const lookup = await fetchPremierRosterLookup(team.name, team.teamTag ?? '');
