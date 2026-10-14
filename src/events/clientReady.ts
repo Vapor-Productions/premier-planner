@@ -1,6 +1,7 @@
 import { ActivityType } from 'discord.js';
 import { Discord, Once } from 'discordx';
 import { bot } from '../bot';
+import { debugLog } from '../utils/debug.js';
 import { getDefaultLocale, t } from '../utils/localization';
 
 @Discord()
@@ -8,7 +9,9 @@ export class Ready {
   @Once()
   async clientReady(): Promise<void> {
     // Make sure all guilds are cached
-    await bot.guilds.fetch();
+    debugLog('clientReady', 'guilds.fetch');
+    const guilds = await bot.guilds.fetch();
+    debugLog('clientReady', 'guilds.fetch ->', { count: guilds.size });
 
     // Synchronize applications commands with Discord
     void bot.initApplicationCommands();

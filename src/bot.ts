@@ -2,9 +2,11 @@ import 'dotenv/config';
 import { IntentsBitField } from 'discord.js';
 import { Client } from 'discordx';
 
-// Comma-separated list of dev guild IDs, e.g. "123,456"
+// Comma-separated dev guild IDs (non-prod guild command registration) — see .env.example
 const devGuildIds =
-  process.env.DEV_GUILD_IDS?.split(',').map((id) => id.trim()).filter(Boolean) ?? [];
+  process.env.DEV_GUILD_IDS?.split(',')
+    .map((id) => id.trim())
+    .filter(Boolean) ?? [];
 
 // Treat everything except production as dev
 const isDev = process.env.NODE_ENV !== 'production';

@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Try Prisma Accelerate: https://pris.ly/d/accelerate
 
 generator client {
   provider = "prisma-client"
@@ -21,8 +21,13 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teams Team[] @relation("TeamMembers")
-  leader Team[] @relation("TeamLeader")
+  riotPuuid     String?   @unique
+  riotGameName  String?
+  riotTagLine   String?
+  riotLinkedAt  DateTime?
+
+  teamMemberships TeamMember[]
+  leader          Team[]       @relation("TeamLeader")
 }
 
 model Team {
@@ -31,11 +36,25 @@ model Team {
   teamTag   String   @default("")
   guildId   String
   leader    User?    @relation("TeamLeader", fields: [leaderId], references: [discordId])
-  members   User[]   @relation("TeamMembers")
   leaderId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  memberLinks TeamMember[]
+
   @@index([guildId])
   @@unique([name, teamTag])
+}
+
+/// Explicit join: one row per user on a team’s roster (readable in SQL tools: teamId + userId + FKs).
+model TeamMember {
+  id     String @id @default(uuid())
+  teamId String
+  userId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
 }

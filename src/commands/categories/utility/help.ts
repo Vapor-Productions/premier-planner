@@ -27,7 +27,42 @@ const categoryEmojis: Record<string, string> = {
   fun: '🎉',
   information: '💡',
   valorant: '🎮',
+  owner: '🔐',
 };
+
+/** Categories not shown in /help (owner-only and similar). */
+const HELP_EXCLUDED_CATEGORIES = new Set(['owner']);
+
+function isCategoryVisibleInHelp(category: string | undefined): boolean {
+  if (!category) {
+    return false;
+  }
+  return !HELP_EXCLUDED_CATEGORIES.has(category.toLowerCase());
+}
+
+/**
+ * Per-subcommand slash metadata (before grouping). Using grouped {@link MetadataStorage.applicationCommands}
+ * merges e.g. `/riot` into one parent and loses mixed categories (Valorant vs Owner).
+ */
+function flatSlashCommands(): readonly DApplicationCommand[] {
+  return MetadataStorage.instance.applicationCommandSlashesFlat;
+}
+
+/** Slash mention path: `riot link`, `team create`, or top-level `help`. */
+function slashPathForHelp(cmd: DApplicationCommand): string {
+  if (cmd.subgroup) {
+    return `${cmd.group} ${cmd.subgroup} ${cmd.name}`;
+  }
+  if (cmd.group) {
+    return `${cmd.group} ${cmd.name}`;
+  }
+  return cmd.name;
+}
+
+/** Key for {@link getCommandIds} root id (`riot`, `team`, or `help`). */
+function slashRootName(cmd: DApplicationCommand): string {
+  return cmd.group ?? cmd.name;
+}
 
 /**
  * Get the emoji for a category, defaults to wrench
@@ -42,11 +77,14 @@ function getCategoryEmoji(category: string): string {
 function getCategoriesAsOptions(): SelectMenuComponentOptionData[] {
   const uniqueCategories = Array.from(
     new Set(
-      MetadataStorage.instance.applicationCommands
+      flatSlashCommands()
         .filter((cmd: DApplicationCommand & ICategory) => cmd.category)
+        .filter((cmd: DApplicationCommand & ICategory) =>
+          isCategoryVisibleInHelp(cmd.category as string)
+        )
         .map((cmd: DApplicationCommand & ICategory) => cmd.category as string)
     )
-  );
+  ).sort((a, b) => a.localeCompare(b));
 
   return uniqueCategories.map((cat) => ({
     label: `${getCategoryEmoji(cat)} ${cat}`,
@@ -58,21 +96,21 @@ function getCategoriesAsOptions(): SelectMenuComponentOptionData[] {
  * Build the formatted command list for a specific category
  */
 async function buildCommandsList(category: string, client: Client): Promise<string> {
-  // Filter commands by category, excluding the help command itself
-  const filteredCommands = MetadataStorage.instance.applicationCommands.filter(
+  if (!isCategoryVisibleInHelp(category)) {
+    return '';
+  }
+  const filteredCommands = flatSlashCommands().filter(
     (cmd: DApplicationCommand & ICategory) =>
       cmd.category?.toLowerCase() === category.toLowerCase() && cmd.name?.toLowerCase() !== 'help'
   );
 
   const commandIds = await getCommandIds(client);
-  console.log(commandIds);
   return filteredCommands
     .map((cmd) => {
-      const commandId = commandIds[cmd.name];
-      console.log(cmd.name, commandId);
-      // Use Discord's command mention format if we have the ID, otherwise just capitalize
-      const commandMention = commandId ? `</${cmd.name}:${commandId}>` : capitalise(cmd.name);
-      console.log(commandMention);
+      const root = slashRootName(cmd);
+      const commandId = commandIds[root];
+      const path = slashPathForHelp(cmd);
+      const commandMention = commandId ? `</${path}:${commandId}>` : capitalise(path);
       return `> 🔹 **${commandMention}**\n> \u200b \u200b \u200b *${cmd.description}*`;
     })
     .join('\n');
@@ -93,15 +131,21 @@ async function buildHelpContainer(
   const { category, selectMenu, showCategorySelector, userId } = options;
   const botName = client.user?.username ?? 'Bot';
 
-  const [commandCenter, welcome, categoriesTitle, categoriesDescription1, categoriesDescription2, categoryCommandsTemplate] =
-    await Promise.all([
-      tWithUser('commands.help.commandCenter', userId, { botName }),
-      tWithUser('commands.help.welcome', userId, { botName }),
-      tWithUser('commands.help.categoriesTitle', userId),
-      tWithUser('commands.help.categoriesDescription1', userId),
-      tWithUser('commands.help.categoriesDescription2', userId),
-      tWithUser('commands.help.categoryCommands', userId),
-    ]);
+  const [
+    commandCenter,
+    welcome,
+    categoriesTitle,
+    categoriesDescription1,
+    categoriesDescription2,
+    categoryCommandsTemplate,
+  ] = await Promise.all([
+    tWithUser('commands.help.commandCenter', userId, { botName }),
+    tWithUser('commands.help.welcome', userId, { botName }),
+    tWithUser('commands.help.categoriesTitle', userId),
+    tWithUser('commands.help.categoriesDescription1', userId),
+    tWithUser('commands.help.categoriesDescription2', userId),
+    tWithUser('commands.help.categoryCommands', userId),
+  ]);
 
   const headerText = new TextDisplayBuilder().setContent(
     [`# 🚀 **${commandCenter}**`, `> 👋 **${welcome}**`].join('\n')
@@ -121,14 +165,12 @@ async function buildHelpContainer(
       ].join('\n')
     );
 
-    container
-      .addTextDisplayComponents(selectText)
-      .addActionRowComponents((row) => {
-        if (!selectMenu) {
-          throw new Error('Select menu is required for the category selector view');
-        }
-        return row.addComponents(selectMenu);
-      });
+    container.addTextDisplayComponents(selectText).addActionRowComponents((row) => {
+      if (!selectMenu) {
+        throw new Error('Select menu is required for the category selector view');
+      }
+      return row.addComponents(selectMenu);
+    });
   } else if (category) {
     const commandsList = await buildCommandsList(category, client);
     const categoryHeading = categoryCommandsTemplate.replace('{category}', capitalise(category));
@@ -170,7 +212,10 @@ async function handleHelp(
     }
 
     const selectedCategory = firstCategory.value.replace(/^help-/, '').toLowerCase();
-    const container = await buildHelpContainer(client, { category: selectedCategory, userId: interaction.user.id });
+    const container = await buildHelpContainer(client, {
+      category: selectedCategory,
+      userId: interaction.user.id,
+    });
 
     await interaction.reply({
       components: [container],
