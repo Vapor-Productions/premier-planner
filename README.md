@@ -1,198 +1,167 @@
-<!-- <div>
-  <p align="center">
-    <a href="https://discordx.js.org" target="_blank" rel="nofollow">
-      <img src="https://discordx.js.org/discordx.svg" width="546" />
-    </a>
-  </p>
-  <p align="center">
-    <a href="https://discordx.js.org/discord"
-      ><img
-        src="https://img.shields.io/discord/874802018361950248?color=5865F2&logo=discord&logoColor=white"
-        alt="Discord server"
-    /></a>
-    <a href="https://www.npmjs.com/package/discordx"
-      ><img
-        src="https://img.shields.io/npm/v/discordx.svg?maxAge=3600"
-        alt="NPM version"
-    /></a>
-    <a href="https://www.npmjs.com/package/discordx"
-      ><img
-        src="https://img.shields.io/npm/dt/discordx.svg?maxAge=3600"
-        alt="NPM downloads"
-    /></a>
-    <a href="https://github.com/discordx-ts/discordx/actions"
-      ><img
-        src="https://github.com/discordx-ts/discordx/workflows/Build/badge.svg"
-        alt="Build status"
-    /></a>
-    <a href="https://www.paypal.me/vijayxmeena"
-      ><img
-        src="https://img.shields.io/badge/donate-paypal-F96854.svg"
-        alt="paypal"
-    /></a>
-  </p>
-  <p align="center">
-    <b> Create a discord bot with TypeScript and Decorators! </b>
-  </p>
-</div> -->
+# Premier Planner
 
-<!-- # 📖 Introduction
+Premier Planner is a Discord bot for organizing Valorant Premier teams inside Discord guilds. It uses [discordx](https://discordx.js.org) slash commands, Prisma 7 with PostgreSQL, and HenrikDev/Riot APIs for Riot account and Premier roster lookups.
 
-This project uses discordx and Discord.js to create a template for all future AT bots.
+## What the bot does
 
-## 🏗 Development
-
-```bash
-yarn install
-yarn dev
-```
-
-If you want to use [Nodemon](https://nodemon.io/) to auto-reload while in development:
-
-```bash
-yarn watch
-```
-
-## 💻 Production
-
-```bash
-yarn install --production
-yarn build
-yarn start
-```
-
-## 🐋 Docker
-
-To start your application:
-
-```bash
-docker-compose up -d
-```
-
-To shut down your application:
-
-```bash
-docker-compose down
-```
-
-To view your application's logs:
-
-```bash
-docker-compose logs
-```
-
-For the full command list please view the [Docker Documentation](https://docs.docker.com/engine/reference/commandline/cli/).
-
-## 📜 Documentation
-
-- [discordx.js.org](https://discordx.js.org)
-- [Tutorials (dev.to)](https://dev.to/samarmeena/series/14317)
-
-## ☎️ Need help?
-
-- [Check frequently asked questions](https://discordx.js.org/docs/faq)
-- [Check examples](https://github.com/discordx-ts/discordx/tree/main/packages/discordx/examples)
-- Ask in the community [Discord server](https://discordx.js.org/discord)
-
-## 💖 Thank you
-
-You can support [discordx](https://www.npmjs.com/package/discordx) by giving it a [GitHub](https://github.com/discordx-ts/discordx) star. --> -->
-
-# Discord Bot Template
-
-A Discord bot template built with [discordx](https://discordx.js.org) and TypeScript.
-
-## Features
-
-- ⚡ **TypeScript** - Write type-safe code
-- 🎯 **Decorators** - Use decorators for commands and events
-- 🔧 **Hot Reload** - Auto-reload commands during development
-- 📦 **ESM** - Use ES modules
-- 🐳 **Docker** - Containerized deployment
-- 🗄️ **Database** - Prisma ORM with PostgreSQL
-- 🛡️ **Error Handling** - Comprehensive error handling and anti-crash system
-- 📊 **Error Logging** - Optional Discord channel error reporting
-- 🧹 **Biome** - Fast linting, formatting, and import organization
+- Registers slash commands globally in production, or only in `DEV_GUILD_IDS` when `NODE_ENV !== "production"`.
+- Stores Discord users, language preferences, Riot account links, teams, and team memberships in PostgreSQL.
+- Lets administrators create Valorant Premier teams and verify team data against HenrikDev's Premier API before saving it.
+- Shows saved teams with roster status: linked users are compared with the live Premier roster when HenrikDev exposes roster members.
+- Provides Riot linking commands:
+  - `/riot link` currently points privileged users to `/riot link-backup`.
+  - `/riot link-backup` links the caller by Riot ID through HenrikDev account lookup.
+  - `/riot link-verify` lets `BOT_DEV_IDS` manually link another non-bot Discord user.
+- Starts an RSO callback HTTP server when Riot OAuth variables are configured. The OAuth session helper exists in `src/utils/riot/linkServer.ts`; the active slash command flow is still the HenrikDev backup path.
+- Supports per-user language preferences, optional Discord error reporting, debug logging, and maintenance-mode guards for Riot commands.
 
 ## Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
 
 ```properties
-# Discord Bot Token
+# Discord application
+DISCORD_CLIENT_ID=your_discord_client_id_here
+DISCORD_GUILD_ID=your_primary_guild_id_here
 DISCORD_TOKEN=your_discord_bot_token_here
 
-# Database URL (for Prisma)
+# PostgreSQL connection used by Prisma
 DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
 
-# Error Log Channel ID (optional - for error reporting to Discord)
+# Optional Discord channel for error embeds
 ERROR_LOG_CHANNEL_ID=123456789012345678
 
-# Environment
+# Runtime mode. Non-production registers commands only to DEV_GUILD_IDS when provided.
 NODE_ENV=development
+
+# Development command registration
+DEV_GUILD_IDS=123456789012345678,987654321098765432
+
+# Privileged bot operators for /riot link-verify and admin-or-dev Riot commands
+BOT_DEV_IDS=501700626690998280
+
+# HenrikDev API key for Valorant account and Premier roster lookups
+VAL_API_KEY=your_henrikdev_api_key
+
+# Riot Sign-On callback server configuration
+RIOT_CLIENT_ID=your_riot_oauth_client_id
+RIOT_CLIENT_SECRET=your_riot_oauth_client_secret
+RIOT_API_KEY=optional_riot_client_secret_fallback
+RIOT_REDIRECT_URI=https://your-public-host.example.com/riot/callback
+RIOT_LINK_BIND_HOST=0.0.0.0
+
+# Optional operational controls
+DEBUG_MODE=1
+MAINTENANCE_MODE=0
+MAINTENANCE_COMMANDS=riot.link,riot.link-backup,riot.link-verify
 ```
 
-## Error Logging to Discord Channel
+### Environment notes
 
-If you want errors to be reported to a specific Discord channel, set the `ERROR_LOG_CHANNEL_ID` environment variable in your `.env` file to the target channel's ID:
+- `VAL_API_KEY` is required by explicit guards for `/riot link-backup` and `/riot link-verify`; Premier team and roster lookups also send it when present.
+- `RIOT_CLIENT_SECRET` may be omitted when `RIOT_API_KEY` is set; `src/utils/riot/rso.ts` accepts `RIOT_API_KEY` as the OAuth client secret fallback.
+- `RIOT_REDIRECT_URI` controls the callback server port and path. `RIOT_LINK_BIND_HOST` only controls the listen host.
+- `MAINTENANCE_MODE` accepts `1`, `true`, `yes`, or `on`. `MAINTENANCE_COMMANDS` is a comma-separated list of command IDs and currently applies to the Riot command IDs listed above.
 
-```properties
-ERROR_LOG_CHANNEL_ID=123456789012345678
-```
-
-When this is set, any error handled by the bot will also be posted to that channel as an embed for monitoring.
-
-## Installation
+## Setup
 
 ```bash
 # Install dependencies
 yarn install
 
-# Generate Prisma client
-yarn prisma generate
+# Generate the Prisma client in src/generated/prisma
+yarn prisma:generate
 
-# Run database migrations
-yarn prisma migrate dev
-```
+# Push the Prisma schema to the configured PostgreSQL database
+yarn prisma:push
 
-## Development
-
-```bash
-# Start development server with hot reload
+# Start the development entry point
 yarn dev
-
-# Watch for file changes
-yarn watch
 ```
 
-## Production
+`yarn setup` runs install, client generation, and `prisma db push`. `yarn setup:prod` does the same with production dependencies.
+
+### Database
+
+The Prisma schema defines:
+
+- `User`: Discord ID, username, language, and optional Riot account fields (`riotPuuid`, game name, tag line, link timestamp).
+- `Team`: team name, tag, guild ID, and optional leader relation keyed to the leader's Discord ID.
+- `TeamMember`: explicit join rows between `Team` and `User`.
+
+`Team` is indexed by `guildId`, but the current unique constraint is global on `(name, teamTag)`. Two guilds cannot store the same Premier name/tag pair.
+
+For SQL clients, `prisma/sql/team_members_readable_view.sql` creates a `TeamMembers_readable` view with team and member names:
 
 ```bash
-# Build the project
-yarn build
+psql "$DATABASE_URL" -f prisma/sql/team_members_readable_view.sql
+```
 
-# Start production server
-yarn start
+## Command workflows
+
+### Team setup
+
+1. A server administrator runs `/setup` and chooses **Team Settings** for guidance.
+2. A server administrator runs `/team create`.
+3. The interactive flow asks for Premier team name, team tag, and owner.
+4. The bot validates the name/tag with HenrikDev's Premier endpoint before enabling member selection.
+5. The administrator selects up to 6 members. Selected members must not already be rostered in any saved team, and the team leader cannot also be selected as a member.
+6. Confirm creates the `Team` and `TeamMember` rows in a Prisma transaction.
+
+Use `/team view` to search saved teams in the current guild. The response includes the saved roster and a Premier status. When HenrikDev exposes roster PUUIDs, linked users are marked as on or not on the live Premier roster.
+
+### Riot account linking
+
+- `/riot link-backup game-name:<name> tag:<tag>` resolves a Riot ID through HenrikDev, prevents reusing the same PUUID across Discord users, and stores the Riot account on the caller's `User` row.
+- `/riot link-verify member:<user> game-name:<name> tag:<tag>` performs the same lookup for another user and is restricted to Discord IDs in `BOT_DEV_IDS`.
+- `/riot link` currently sends users to `/riot link-backup`. The callback server and PKCE helpers are present, but no command currently creates an RSO session URL.
+
+All Riot linking commands reply ephemerally and require either guild Administrator or `BOT_DEV_IDS`, except `/riot link-verify`, which requires `BOT_DEV_IDS`.
+
+### User registration and language
+
+`ensureUserExists` is called before profile, language, and team-related writes. It creates a user row on demand and refreshes the stored username when Discord's username changes. `/language` stores the user's locale on the same `User` row.
+
+## Operations
+
+### Error handling
+
+`setupGlobalErrorHandlers` installs process-level handlers. Command failures are routed through `errorHandler`, which logs context and optionally sends an embed to `ERROR_LOG_CHANNEL_ID`.
+
+### Maintenance mode
+
+Set `MAINTENANCE_MODE=1` to block commands that call `isCommandInMaintenance`. For a narrower block, set `MAINTENANCE_COMMANDS` to comma-separated command IDs such as:
+
+```properties
+MAINTENANCE_COMMANDS=riot.link-backup,riot.link-verify
+```
+
+Only commands wired to `MaintenanceCommandId` are affected; team commands are not currently maintenance-gated.
+
+### Discord command registration
+
+- Production (`NODE_ENV=production`): discordx registers commands globally.
+- Development: set `DEV_GUILD_IDS` for fast guild-scoped command registration.
+- `src/main.ts` calls `bot.clearApplicationCommands(...bot.guilds.cache.map((g) => g.id))` after login, so startup may clear guild commands for guilds already cached by the bot.
+
+## Development and quality
+
+```bash
+yarn dev        # run src/dev.ts with tsx
+yarn watch      # nodemon wrapper around yarn dev
+yarn build      # TypeScript compile
+yarn start      # run build/main.js
+yarn lint       # Biome check
+yarn format     # Biome format check
 ```
 
 ## Docker
 
 ```bash
-# Build and run with Docker Compose
 docker-compose up --build
 ```
 
-## Scripts
-
-- `yarn dev` - Start development server with hot reload
-- `yarn watch` - Watch for file changes
-- `yarn build` - Build the project
-- `yarn start` - Start production server
-- `yarn lint` - Run Biome linting
-- `yarn lint:fix` - Fix Biome linting errors
-- `yarn format` - Format code with Biome
-- `yarn format:fix` - Format and write changes
-- `yarn biome:fix` - Run both linting and formatting fixes
+The checked-in compose file starts the bot and a local PostgreSQL 16 container. Set `RIOT_REDIRECT_URI` to a public URL that reaches the bot process if you wire the RSO callback flow.
 
 ## Project Structure
 
@@ -201,46 +170,10 @@ src/
 ├── commands/          # Slash commands
 │   └── categories/    # Command categories
 ├── events/           # Discord events
-├── utils/            # Utility functions
-│   └── errorHandler.ts # Error handling system
+├── generated/        # Prisma client output
+├── utils/            # API clients, error handling, localization, Prisma helpers
+│   └── riot/         # Riot OAuth and callback server helpers
 ├── bot.ts            # Bot configuration
 ├── main.ts           # Entry point
 └── dev.ts            # Development entry point
 ```
-
-## Error Handling
-
-The bot includes a comprehensive error handling system that:
-
-- Catches and logs all errors with context
-- Prevents crashes from unhandled exceptions
-- Provides user-friendly error messages
-- Supports optional Discord channel error reporting
-- Implements rate limiting to prevent spam
-- Handles database operation errors safely
-
-## Code Quality
-
-This project uses **Biome** for code quality:
-
-- **Fast linting** - Built in Rust for speed
-- **Formatting** - Consistent code style
-- **Import organization** - Automatic import sorting
-- **TypeScript support** - Full TypeScript integration
-- **Decorator support** - Works with Discord.js decorators
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run `yarn biome:fix` to format and lint
-5. Submit a pull request
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Support
-
-You can support [discordx](https://www.npmjs.com/package/discordx) by giving it a [GitHub](https://github.com/discordx-ts/discordx) star.

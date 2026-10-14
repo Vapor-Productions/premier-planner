@@ -1,34 +1,68 @@
-# User Management System
-
-This document explains how the user management system works in the Checklist Bot.
+# User and Riot Account Management
 
 ## Overview
 
-The bot automatically ensures that all users who execute commands are registered in the database. This happens transparently without any user intervention required.
+Premier Planner keeps one `User` row per Discord user. That row stores the Discord identity, language preference, and optional Riot account link used by Premier team verification.
+
+Most slash-command interactions pass through `src/events/interactionCreate.ts`, which calls `ensureUserExists` before handing the interaction to discordx. Commands that create or link records also call the same helper for target users so team and Riot operations have a database row to reference.
 
 ## How It Works
 
 ### Automatic User Registration
 
-1. **Event Handler Integration**: The user management is integrated into the main event handlers in `src/events/common.ts`
-2. **Automatic Check**: Every time a user executes a command (via message or interaction), the system automatically checks if they exist in the database
-3. **Automatic Creation**: If the user doesn't exist, a new database entry is created automatically
-4. **Username Updates**: If the user exists but their username has changed, it's automatically updated
+1. `interactionCreate` ignores bot users and calls `ensureUserExists(interaction.user.id, interaction.user.username)` for human users.
+2. If no row exists, `ensureUserExists` creates it with `discordId` and `username`.
+3. If the row exists but the Discord username changed, the helper updates `username` and `updatedAt`.
+4. The command then runs with a database row available for language, Riot, or team operations.
 
 ### Database Schema
 
-The user management uses the existing `User` model in the Prisma schema:
+The relevant Prisma models are:
 
 ```prisma
 model User {
-  id            String   @id @default(uuid())
-  discordId     String   @unique
-  username      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  ideas         Idea[]
+  id        String   @id @default(uuid())
+  discordId String   @unique
+  username  String
+  language  String   @default("en")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  riotPuuid    String?   @unique
+  riotGameName String?
+  riotTagLine  String?
+  riotLinkedAt DateTime?
+
+  teamMemberships TeamMember[]
+  leader          Team[]       @relation("TeamLeader")
+}
+
+model Team {
+  id       String @id @default(uuid())
+  name     String
+  teamTag  String @default("")
+  guildId  String
+  leaderId String?
+
+  @@index([guildId])
+  @@unique([name, teamTag])
+}
+
+model TeamMember {
+  id     String @id @default(uuid())
+  teamId String
+  userId String
+
+  @@unique([teamId, userId])
 }
 ```
+
+### Constraints
+
+- `discordId` is unique and is the stable lookup key for Discord users.
+- `riotPuuid` is unique when present. `saveLinkedRiotAccount` returns `puuid_taken` instead of overwriting another Discord user's Riot link.
+- `Team.leaderId` points at `User.discordId`, while `TeamMember.userId` points at `User.id`.
+- `Team` uniqueness is currently global on `(name, teamTag)`, not per guild.
 
 ### Key Functions
 
@@ -36,84 +70,87 @@ model User {
 
 This is the main function that:
 
-- Checks if a user exists in the database by Discord ID
-- Creates a new user entry if they don't exist
-- Updates the username if it has changed
-- Returns the user object from the database
+- Checks for an existing row by Discord ID.
+- Creates a user row if one does not exist.
+- Updates the stored username when it changed.
+- Returns the Prisma `User` object.
+
+#### `saveLinkedRiotAccount(discordId, payload, discordUsernameForCreate)`
+
+Persists Riot link details from either the callback server or HenrikDev backup lookup:
+
+- Verifies no other Discord user already owns the target PUUID.
+- Upserts the user row.
+- Stores `riotPuuid`, `riotGameName`, `riotTagLine`, and `riotLinkedAt`.
+- Returns `'ok'` or `'puuid_taken'`.
 
 #### `getUserByDiscordId(discordId: string)`
 
 A utility function to retrieve a user by their Discord ID.
 
+#### `updateUserLanguage(discordId: string, language: string)`
+
+Updates the user's `language` and `updatedAt` fields. `/language` calls `ensureUserExists` before this update.
+
 ## Implementation Details
 
 ### Event Handler Integration
 
-The system is integrated into two main event handlers:
+The main integration point is `src/events/interactionCreate.ts`:
 
-1. **Message Commands** (`messageCreate` event):
+```typescript
+if (interaction.user && !interaction.user.bot) {
+  await ensureUserExists(interaction.user.id, interaction.user.username);
+}
 
-   ```typescript
-   // Ensure user exists in database before executing command
-   await ensureUserExists(message.author.id, message.author.username);
-   ```
+await bot.executeInteraction(interaction);
+```
 
-2. **Slash Commands** (`interactionCreate` event):
+Target-user flows also ensure rows before creating dependent records:
 
-   ```typescript
-   // Ensure user exists in database before executing interaction
-   if (interaction.user) {
-     await ensureUserExists(interaction.user.id, interaction.user.username);
-   }
-   ```
+- `/team create` ensures the chosen team owner and selected members exist before creating `Team` and `TeamMember` rows.
+- `/riot link-verify` ensures the target user exists before linking a Riot account.
+- The Riot callback server uses an existing username when available and falls back to `"Discord user"` only when it has to create a row without Discord member context.
 
 ### Error Handling
 
-- Database errors are logged to the console
-- If user creation fails, the error is thrown and handled by the existing error handler
-- The bot continues to function even if user registration fails
+- User helpers log database errors and rethrow.
+- `interactionCreate` catches errors from the helper or command execution and routes them through `errorHandler`.
+- Discord "unknown interaction" and "already acknowledged" errors are logged as lightweight warnings and do not enter the full error pipeline.
 
 ### Graceful Shutdown
 
-The system includes proper cleanup of database connections when the bot shuts down:
+`src/main.ts` disconnects Prisma and stops the Riot callback server on `SIGINT` and `SIGTERM`:
 
 ```typescript
 process.on("SIGINT", async () => {
   console.log("Shutting down bot...");
+  await stopRiotLinkServer();
   await closePrismaConnection();
   process.exit(0);
 });
 ```
 
-## Benefits
-
-1. **Automatic**: No manual intervention required
-2. **Transparent**: Users don't need to know about the database
-3. **Reliable**: All command users are guaranteed to be in the database
-4. **Up-to-date**: Usernames are automatically updated when they change
-5. **Efficient**: Only creates/updates when necessary
-
 ## Usage in Commands
 
-Commands that need to interact with user data can now rely on the fact that users will always exist in the database. For example:
+When adding a command that writes user-owned data:
 
 ```typescript
-// In any command, you can safely assume the user exists
 const user = await ensureUserExists(
   interaction.user.id,
   interaction.user.username
 );
 
-// Use the database user ID for relationships
-await prisma.idea.create({
+await prisma.teamMember.create({
   data: {
-    title: title,
-    description: idea,
-    userId: user.id, // Use database ID, not Discord ID
+    teamId,
+    userId: user.id,
   },
 });
 ```
 
-## Migration from Existing Code
+Use the correct user key for the relation:
 
-The existing `profile.ts` command has been updated to use the new `ensureUserExists` function instead of duplicating the user creation logic. This ensures consistency across the codebase.
+- Use `User.id` for `TeamMember.userId`.
+- Use `User.discordId` for `Team.leaderId`.
+- Use `discordId` for lookups from Discord interactions.
