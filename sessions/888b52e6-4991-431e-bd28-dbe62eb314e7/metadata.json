@@ -3,8 +3,8 @@
   "sessionId": "888b52e6-4991-431e-bd28-dbe62eb314e7",
   "model": "grok-4.7-high",
   "startedAt": "2026-10-14T22:14:01.579Z",
-  "endedAt": "2026-10-14T23:00:42.100Z",
-  "durationMs": 2800488,
+  "endedAt": "2026-10-14T23:21:52.540Z",
+  "durationMs": 4070927,
   "status": "running",
   "tokens": {
     "total": 0,
@@ -16,8 +16,8 @@
   },
   "toolCalls": 144,
   "lines": {
-    "added": 3,
-    "removed": 1
+    "added": 29,
+    "removed": 5
   },
   "filesChanged": [
     "src/utils/riot/compliance.ts",
@@ -32,14 +32,14 @@
     "src/types/environment.d.ts",
     "src/utils/userManager.ts",
     "src/utils/maintenance.ts",
-    "src/events/clientReady.ts"
+    "src/bot.ts"
   ],
   "git": {
     "branch": "main",
     "headBefore": "c6bc0bdd66bc7b0b406cde62f22fd94f5259f210",
-    "headAfter": "41bf1aa51771e773974ff2a5aac04904488b2ec7",
+    "headAfter": "46cd720113f43cee1aba0da43d74019a0cb70a7b",
     "commitShas": [
-      "41bf1aa51771e773974ff2a5aac04904488b2ec7"
+      "46cd720113f43cee1aba0da43d74019a0cb70a7b"
     ]
   },
   "summary": "I'll find how Premier Planner is hosted and get the bot deployed so you can test `/riot link`.",
