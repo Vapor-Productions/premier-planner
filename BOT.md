@@ -33,7 +33,11 @@ Built from `bot-template` (discordx 11, Prisma **7** with `@prisma/adapter-pg`, 
 The template defects were fixed on branch `fix/template-defects` (2026-10-14); `USER_MANAGEMENT.md` now describes this bot.
 
 ## Intents
-Guilds only, no privileged intents. The member lookups in `team.ts` use `guild.members.fetch(id)`, a REST call that needs no intent, so GuildMembers was dropped (2026-10-14).
+All non-privileged intents are enabled (2026-10-15): Guilds, GuildModeration, GuildExpressions, GuildIntegrations, GuildWebhooks, GuildInvites, GuildVoiceStates, GuildMessages, GuildMessageReactions, GuildMessageTyping, GuildMessagePolls, DirectMessages, DirectMessageReactions, DirectMessageTyping, DirectMessagePolls, GuildScheduledEvents, AutoModerationConfiguration, AutoModerationExecution. No `Partials` are set because no code handles DM events; add `Partials.Channel` if a DM handler is ever written.
+
+The privileged intents (GuildMembers, GuildPresences, MessageContent) stay off because nothing uses them. The member lookups in `team.ts` use `guild.members.fetch(id)`, a REST call that needs no intent, and there are no prefix commands.
+
+Discord gates (as of 2026-06-10): **Privileged Intent Review** is required only if a privileged intent is enabled and the app exceeds **10,000 unique users** who can see it — not at 100 servers. Growing past **100 servers** still needs separate **App Verification**. The review doesn't apply while no privileged intent is enabled.
 
 ## Env vars
 `.env.example`, `src/types/environment.d.ts` and the README table list the same set: `DISCORD_TOKEN`, `DATABASE_URL`, `ERROR_LOG_CHANNEL_ID`, `NODE_ENV`, `DEV_GUILD_IDS`, `BOT_DEV_IDS`, `DEBUG_MODE`, `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET` (falls back to `RIOT_API_KEY`), `RIOT_REDIRECT_URI`, `RIOT_LINK_PORT`, `RIOT_LINK_BIND_HOST`, `VAL_API_KEY`, `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.

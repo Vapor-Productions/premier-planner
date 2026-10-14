@@ -17,10 +17,30 @@ export const bot = new Client({
   // To use only guild command
   botGuilds: botGuilds,
 
-  // Discord intents. No privileged intents: member lookups use guild.members.fetch(id), a REST
-  // call. There are no prefix commands, so no GuildMessages and no MessageContent: bringing prefix
-  // commands back needs both, plus a messageCreate handler that calls ensureUserExists.
-  intents: [IntentsBitField.Flags.Guilds],
+  // Discord intents: every non-privileged intent. The privileged ones (GuildMembers,
+  // GuildPresences, MessageContent) stay off because nothing uses them: member lookups use
+  // guild.members.fetch(id), a REST call, and there are no prefix commands. Enabling one once the
+  // app reaches 10,000+ unique users requires Discord's Privileged Intent Review (since 2026-06-10).
+  intents: [
+    IntentsBitField.Flags.Guilds,
+    IntentsBitField.Flags.GuildModeration,
+    IntentsBitField.Flags.GuildExpressions,
+    IntentsBitField.Flags.GuildIntegrations,
+    IntentsBitField.Flags.GuildWebhooks,
+    IntentsBitField.Flags.GuildInvites,
+    IntentsBitField.Flags.GuildVoiceStates,
+    IntentsBitField.Flags.GuildMessages,
+    IntentsBitField.Flags.GuildMessageReactions,
+    IntentsBitField.Flags.GuildMessageTyping,
+    IntentsBitField.Flags.GuildMessagePolls,
+    IntentsBitField.Flags.DirectMessages,
+    IntentsBitField.Flags.DirectMessageReactions,
+    IntentsBitField.Flags.DirectMessageTyping,
+    IntentsBitField.Flags.DirectMessagePolls,
+    IntentsBitField.Flags.GuildScheduledEvents,
+    IntentsBitField.Flags.AutoModerationConfiguration,
+    IntentsBitField.Flags.AutoModerationExecution,
+  ],
 
   // Debug logs are disabled in silent mode
   silent: false,
