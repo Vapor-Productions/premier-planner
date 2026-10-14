@@ -13,16 +13,28 @@ export class Ready {
     const guilds = await bot.guilds.fetch();
     debugLog('clientReady', 'guilds.fetch ->', { count: guilds.size });
 
-    // Synchronize applications commands with Discord
-    void bot.initApplicationCommands();
+    // Clear the scope that is not in use, so no command shows up twice. Production registers
+    // globally and clears guild commands left over from dev; dev (DEV_GUILD_IDS) registers per
+    // guild and clears globals. Awaited so it finishes before registration starts: main.ts used
+    // to run the guild clear right after login, racing the registration. A failure must not
+    // block registration.
+    try {
+      if (bot.botGuilds.length > 0) {
+        await bot.clearApplicationCommands();
+      } else if (bot.guilds.cache.size > 0) {
+        // Guarded: called with no ids, this clears the global commands instead
+        await bot.clearApplicationCommands(...bot.guilds.cache.map((g) => g.id));
+      }
+    } catch (error) {
+      console.error('Could not clear stale application commands:', error);
+    }
 
-    // To clear all guild commands, uncomment this line,
-    // This is useful when moving from guild commands to global commands
-    // It must only be executed once
-    //
-    //  await bot.clearApplicationCommands(
-    //    ...bot.guilds.cache.map((g) => g.id)
-    //  );
+    // Synchronize application commands with Discord
+    try {
+      await bot.initApplicationCommands();
+    } catch (error) {
+      console.error('Could not register application commands:', error);
+    }
 
     // Set the client status that rotates every minute with a status from an array of statuses
     const defaultLocale = getDefaultLocale();

@@ -36,9 +36,6 @@ async function run() {
 
   startRiotLinkServer();
 
-  // Delete global commands on startup
-  await bot.clearApplicationCommands(...bot.guilds.cache.map((g) => g.id));
-
   // Set the client for error reporting
   errorHandler.setClient(bot);
 
