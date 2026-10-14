@@ -25,6 +25,8 @@ declare global {
       RIOT_API_KEY?: string;
       /** Public callback URL; its port and path are where the link server listens. */
       RIOT_REDIRECT_URI?: string;
+      /** Port the link server listens on; defaults to the port in `RIOT_REDIRECT_URI`. */
+      RIOT_LINK_PORT?: string;
       /** Interface the link server binds to (default `0.0.0.0`). */
       RIOT_LINK_BIND_HOST?: string;
 

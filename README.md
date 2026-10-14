@@ -128,7 +128,8 @@ Copy `.env.example` to `.env` and fill it in. Only `DISCORD_TOKEN` and `DATABASE
 | `BOT_DEV_IDS` | no | Comma-separated user IDs allowed to use privileged commands without Administrator |
 | `DEBUG_MODE` | no | `1` / `true` / `yes` / `on` for verbose logs |
 | `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET`, `RIOT_REDIRECT_URI` | for `/riot link` | Riot Sign-On credentials and the public callback URL. `RIOT_CLIENT_SECRET` falls back to `RIOT_API_KEY` |
-| `RIOT_LINK_BIND_HOST` | no | Interface the callback server binds to (default `0.0.0.0`); the port and path come from `RIOT_REDIRECT_URI` |
+| `RIOT_LINK_PORT` | no | Port the callback server listens on; defaults to the port in `RIOT_REDIRECT_URI`. Set it when a reverse proxy serves the public URL |
+| `RIOT_LINK_BIND_HOST` | no | Interface the callback server binds to (default `0.0.0.0`); the path comes from `RIOT_REDIRECT_URI` |
 | `VAL_API_KEY` | for `/riot link-backup` | HenrikDev Valorant API key, also sent with Premier lookups when set |
 | `MAINTENANCE_MODE` | no | `1` pauses every command that checks maintenance |
 | `MAINTENANCE_COMMANDS` | no | Comma-separated command ids to pause, e.g. `riot.link,riot.link-backup` |
