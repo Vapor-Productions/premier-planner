@@ -1,118 +1,20 @@
-<!-- <div>
-  <p align="center">
-    <a href="https://discordx.js.org" target="_blank" rel="nofollow">
-      <img src="https://discordx.js.org/discordx.svg" width="546" />
-    </a>
-  </p>
-  <p align="center">
-    <a href="https://discordx.js.org/discord"
-      ><img
-        src="https://img.shields.io/discord/874802018361950248?color=5865F2&logo=discord&logoColor=white"
-        alt="Discord server"
-    /></a>
-    <a href="https://www.npmjs.com/package/discordx"
-      ><img
-        src="https://img.shields.io/npm/v/discordx.svg?maxAge=3600"
-        alt="NPM version"
-    /></a>
-    <a href="https://www.npmjs.com/package/discordx"
-      ><img
-        src="https://img.shields.io/npm/dt/discordx.svg?maxAge=3600"
-        alt="NPM downloads"
-    /></a>
-    <a href="https://github.com/discordx-ts/discordx/actions"
-      ><img
-        src="https://github.com/discordx-ts/discordx/workflows/Build/badge.svg"
-        alt="Build status"
-    /></a>
-    <a href="https://www.paypal.me/vijayxmeena"
-      ><img
-        src="https://img.shields.io/badge/donate-paypal-F96854.svg"
-        alt="paypal"
-    /></a>
-  </p>
-  <p align="center">
-    <b> Create a discord bot with TypeScript and Decorators! </b>
-  </p>
-</div> -->
+# Premier Planner
 
-<!-- # 📖 Introduction
-
-This project uses discordx and Discord.js to create a template for all future AT bots.
-
-## 🏗 Development
-
-```bash
-yarn install
-yarn dev
-```
-
-If you want to use [Nodemon](https://nodemon.io/) to auto-reload while in development:
-
-```bash
-yarn watch
-```
-
-## 💻 Production
-
-```bash
-yarn install --production
-yarn build
-yarn start
-```
-
-## 🐋 Docker
-
-To start your application:
-
-```bash
-docker-compose up -d
-```
-
-To shut down your application:
-
-```bash
-docker-compose down
-```
-
-To view your application's logs:
-
-```bash
-docker-compose logs
-```
-
-For the full command list please view the [Docker Documentation](https://docs.docker.com/engine/reference/commandline/cli/).
-
-## 📜 Documentation
-
-- [discordx.js.org](https://discordx.js.org)
-- [Tutorials (dev.to)](https://dev.to/samarmeena/series/14317)
-
-## ☎️ Need help?
-
-- [Check frequently asked questions](https://discordx.js.org/docs/faq)
-- [Check examples](https://github.com/discordx-ts/discordx/tree/main/packages/discordx/examples)
-- Ask in the community [Discord server](https://discordx.js.org/discord)
-
-## 💖 Thank you
-
-You can support [discordx](https://www.npmjs.com/package/discordx) by giving it a [GitHub](https://github.com/discordx-ts/discordx) star. --> -->
-
-# Discord Bot Template
-
-A Discord bot template built with [discordx](https://discordx.js.org) and TypeScript.
+Premier Planner is a Discord bot for managing Valorant Premier teams. It uses
+[discordx](https://discordx.js.org), Discord.js, TypeScript and Prisma with PostgreSQL.
 
 ## Features
 
-- ⚡ **TypeScript** - Write type-safe code
-- 🎯 **Decorators** - Use decorators for commands and events
-- 🔧 **Hot Reload** - Auto-reload commands during development
-- 📦 **ESM** - Use ES modules
-- 🐳 **Docker** - Containerized deployment
-- 🗄️ **Database** - Prisma ORM with PostgreSQL
-- 🛡️ **Error Handling** - Comprehensive error handling and anti-crash system
-- 📊 **Error Logging** - Optional Discord channel error reporting
-- 🧹 **Biome** - Fast linting, formatting, and import organization
+- **Premier team workflows** - Admins create teams, choose captains and roster members, then
+  verify saved members against the live Premier roster when HenrikDev exposes it.
+- **Riot account links** - Stores a Riot PUUID, game name and tag line for each Discord user.
+- **Per-user language** - `/language` stores a preferred locale on the `User` row.
+- **discordx commands** - Slash commands, grouped subcommands and message components are loaded from
+  `src/commands` and `src/events`.
+- **Operational controls** - Development guild command registration, maintenance switches, debug logs,
+  graceful shutdown and optional Discord error-log embeds.
+- **Prisma/PostgreSQL** - Prisma 7 client generation and `db push` are part of setup/build flows.
+- **Biome** - Fast linting, formatting and import organization.
 
 ## Environment Variables
 
@@ -127,11 +29,30 @@ Copy `.env.example` to `.env` and fill it in. Only `DISCORD_TOKEN` and `DATABASE
 | `DEV_GUILD_IDS` | no | Comma-separated guild IDs for command registration outside production |
 | `BOT_DEV_IDS` | no | Comma-separated user IDs allowed to use privileged commands without Administrator |
 | `DEBUG_MODE` | no | `1` / `true` / `yes` / `on` for verbose logs |
-| `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET`, `RIOT_REDIRECT_URI` | for `/riot link` | Riot Sign-On credentials and the public callback URL. `RIOT_CLIENT_SECRET` falls back to `RIOT_API_KEY` |
+| `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET`, `RIOT_REDIRECT_URI` | no | Configure the built-in Riot Sign-On callback server and helper functions. `RIOT_CLIENT_SECRET` falls back to `RIOT_API_KEY`; the current `/riot link` command redirects to `/riot link-backup` and does not create an RSO session yet |
 | `RIOT_LINK_BIND_HOST` | no | Interface the callback server binds to (default `0.0.0.0`); the port and path come from `RIOT_REDIRECT_URI` |
 | `VAL_API_KEY` | for `/riot link-backup` | HenrikDev Valorant API key, also sent with Premier lookups when set |
 | `MAINTENANCE_MODE` | no | `1` pauses every command that checks maintenance |
 | `MAINTENANCE_COMMANDS` | no | Comma-separated command ids to pause, e.g. `riot.link,riot.link-backup` |
+
+## Command workflows
+
+- `/setup` is Administrator-only. It currently shows team settings and points operators to
+  `/team create` and `/team view`; it does not persist server setup on its own.
+- `/team create` is Administrator-only and guild-only. The flow stores in-memory draft state per
+  command user, verifies the submitted Premier team name/tag with HenrikDev, lets the operator
+  select up to six roster members, and writes `Team` plus `TeamMember` rows after confirmation.
+  The leader cannot also be a roster member. A selected member cannot already be in any team.
+- `/team view` is guild-scoped. Autocomplete returns teams from the current guild, then the command
+  fetches the saved roster and compares linked Riot PUUIDs against HenrikDev's Premier roster when
+  the API exposes member data.
+- `/riot link` and `/riot link-backup` require a guild Administrator or a Discord user ID listed in
+  `BOT_DEV_IDS`. `/riot link` currently replies with a pointer to `/riot link-backup`; the backup
+  path requires `VAL_API_KEY` and saves the resolved HenrikDev PUUID.
+- `/riot link-verify` is in the hidden Owner category, requires `BOT_DEV_IDS`, and lets a bot
+  developer link another non-bot Discord user to a Riot account.
+- `/language` accepts `en` and `nl`. Autocomplete is populated from `getAvailableLanguages`, but
+  the command rejects any locale outside that allow-list.
 
 ## Error Logging to Discord Channel
 
@@ -152,8 +73,8 @@ yarn install
 # Generate Prisma client
 yarn prisma generate
 
-# Run database migrations
-yarn prisma migrate dev
+# Apply the schema
+yarn prisma:push
 ```
 
 ## Development
@@ -183,6 +104,25 @@ yarn start
 docker compose up --build
 ```
 
+The compose file is for local development only. It overrides `DATABASE_URL` so the app talks to the
+bundled `db` service, runs `prisma db push` before `node build/main.js`, and binds Postgres to
+`127.0.0.1:5432`.
+
+## Operations notes
+
+- `NODE_ENV=production` registers global commands. Any other value uses `DEV_GUILD_IDS` for faster
+  guild command registration. On `clientReady`, the bot clears the command scope it is not using
+  before calling `initApplicationCommands`.
+- Maintenance mode only affects commands that call `isCommandInMaintenance` (currently the Riot
+  linking commands). Use `MAINTENANCE_MODE=1` to pause all of those commands, or
+  `MAINTENANCE_COMMANDS=riot.link,riot.link-backup` for targeted pauses.
+- If RSO environment variables are present, `startRiotLinkServer` listens on the port and path from
+  `RIOT_REDIRECT_URI` and on `RIOT_LINK_BIND_HOST` (default `0.0.0.0`). The server can complete
+  pending sessions created by `createRiotLinkSession`; the current slash command does not create
+  those sessions.
+- SIGINT/SIGTERM run one graceful shutdown path: stop the Riot link server, destroy the Discord
+  client, disconnect Prisma, then exit.
+
 ## Scripts
 
 - `yarn dev` - Start development server with hot reload
@@ -202,8 +142,8 @@ src/
 ├── commands/          # Slash commands
 │   └── categories/    # Command categories
 ├── events/           # Discord events
-├── utils/            # Utility functions
-│   └── errorHandler.ts # Error handling system
+├── generated/        # Generated Prisma client
+├── utils/            # Prisma, Riot/Premier APIs, localization, errors, shutdown
 ├── bot.ts            # Bot configuration
 ├── main.ts           # Entry point
 └── dev.ts            # Development entry point
@@ -240,8 +180,4 @@ This project uses **Biome** for code quality:
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## Support
-
-You can support [discordx](https://www.npmjs.com/package/discordx) by giving it a [GitHub](https://github.com/discordx-ts/discordx) star.
+MIT License.

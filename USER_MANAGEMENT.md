@@ -33,7 +33,7 @@ model User {
 
 `discordId` is the Discord-facing key; `id` is the uuid every relation points at. Relate to `user.id`, never to the Discord ID.
 
-The Riot columns are filled by account linking (`saveLinkedRiotAccount`, from Riot Sign-On or the HenrikDev backup). `riotPuuid` is unique: linking a Riot account that another Discord user already linked returns `puuid_taken` instead of moving it.
+The Riot columns are filled by account linking through `saveLinkedRiotAccount`. Today that is the HenrikDev backup flow (`/riot link-backup`) and bot-dev verification flow (`/riot link-verify`); the Riot Sign-On callback code can call the same helper when a session exists, but `/riot link` does not create those sessions yet. `riotPuuid` is unique: linking a Riot account that another Discord user already linked returns `puuid_taken` instead of moving it.
 
 ## When it fails
 
