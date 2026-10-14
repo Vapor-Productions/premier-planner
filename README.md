@@ -134,6 +134,48 @@ Copy `.env.example` to `.env` and fill it in. Only `DISCORD_TOKEN` and `DATABASE
 | `MAINTENANCE_MODE` | no | `1` pauses every command that checks maintenance |
 | `MAINTENANCE_COMMANDS` | no | Comma-separated command ids to pause, e.g. `riot.link,riot.link-backup` |
 
+## Riot Sign-On account linking
+
+`/riot link` is available to every member when Riot Sign-On is configured. The
+command creates a PKCE session, replies with an ephemeral Riot authorization
+button, and the built-in callback server exchanges the returned code for the
+Riot account stored on the Discord user. Sessions expire after 15 minutes.
+
+Configure all of these before starting the bot:
+
+```properties
+RIOT_CLIENT_ID=your-riot-rso-client-id
+RIOT_CLIENT_SECRET=your-riot-rso-client-secret
+RIOT_REDIRECT_URI=https://premier.example.com/riot/callback
+```
+
+`RIOT_CLIENT_SECRET` falls back to `RIOT_API_KEY` for older deployments, but new
+deployments should set the explicit secret. The callback listener starts from
+both `src/main.ts` and `src/dev.ts` after Discord login. It only starts when the
+RSO variables are present.
+
+Listener rules:
+
+- The callback path always comes from `RIOT_REDIRECT_URI`.
+- The listening port comes from `RIOT_LINK_PORT` when set; otherwise it is
+  derived from `RIOT_REDIRECT_URI` (`443` for plain HTTPS URLs, `80` for HTTP).
+- `RIOT_LINK_BIND_HOST` controls the interface and defaults to `0.0.0.0`.
+
+For a reverse proxy or hosting panel, keep the public Riot callback URL clean and
+bind the bot to the internal allocated port:
+
+```properties
+RIOT_REDIRECT_URI=https://premier.example.com/riot/callback
+RIOT_LINK_PORT=25570
+RIOT_LINK_BIND_HOST=0.0.0.0
+```
+
+Route the public callback to the bot's `RIOT_LINK_PORT` and make sure the exact
+`RIOT_REDIRECT_URI` value is registered in Riot's developer portal. If RSO is not
+configured, admins and `BOT_DEV_IDS` users are pointed to `/riot link-backup`;
+regular members receive an unavailable message. `/riot link-backup` still
+requires `VAL_API_KEY` and privileged access.
+
 ## Error Logging to Discord Channel
 
 If you want errors to be reported to a specific Discord channel, set the `ERROR_LOG_CHANNEL_ID` environment variable in your `.env` file to the target channel's ID:
