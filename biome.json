@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.0.6/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
   "linter": {
     "enabled": true,
     "rules": {
@@ -11,9 +11,7 @@
         "noExplicitAny": "warn"
       },
       "style": {
-        "useConst": "error",
-        "useSortedImports": "off",
-        "useSortedExports": "off"
+        "useConst": "error"
       }
     }
   },

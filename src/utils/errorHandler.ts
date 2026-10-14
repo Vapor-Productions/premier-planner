@@ -1,5 +1,6 @@
 import type { Client, CommandInteraction, Interaction, Message, TextChannel } from 'discord.js';
-import { EmbedBuilder, MessageFlags } from 'discord.js';
+import { EmbedBuilder, InteractionType, MessageFlags } from 'discord.js';
+import { debugLog } from './debug.js';
 import { getDefaultLocale, t, tWithUser } from './localization.js';
 
 /**
@@ -96,17 +97,20 @@ export class ErrorHandler {
     // If the original error is a Discord "Unknown interaction" (10062) or
     // "Interaction has already been acknowledged" (40060), don't attempt to
     // send an error reply back to the user – the token is no longer valid.
-    const cause = botError.cause as any;
+    const cause = botError.cause;
     const discordCode =
-      typeof cause?.code === 'number'
-        ? (cause.code as number)
+      cause &&
+      typeof cause === 'object' &&
+      'code' in cause &&
+      typeof (cause as { code: unknown }).code === 'number'
+        ? (cause as { code: number }).code
         : undefined;
     if (discordCode === 10062 || discordCode === 40060) {
       return;
     }
 
     // Double reply / update+reply on the same interaction (harmless user bug in flow)
-    const causeName = cause && typeof cause === 'object' && 'name' in cause ? String((cause as Error).name) : '';
+    const causeName = cause instanceof Error ? cause.name : '';
     if (causeName === 'InteractionAlreadyReplied') {
       return;
     }
@@ -201,17 +205,20 @@ export class ErrorHandler {
    *
    * Only runs for interactions that support `.reply()` and have not been acknowledged yet.
    */
-  private async sendErrorResponse(interaction: CommandInteraction | Interaction, error: BotError): Promise<void> {
+  private async sendErrorResponse(
+    interaction: CommandInteraction | Interaction,
+    error: BotError
+  ): Promise<void> {
     try {
-      // Autocomplete interactions and some system interactions cannot be replied to with a normal message
-      if ((interaction as any).isAutocomplete?.()) {
+      if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
         return;
       }
 
-      // Ensure reply function exists (e.g. ChatInputCommand, Button, ModalSubmit, etc.)
-      const base = interaction as any;
-      const canReply = typeof base.reply === 'function';
-      if (!canReply || base.replied || base.deferred) {
+      if (!interaction.isRepliable()) {
+        return;
+      }
+
+      if (interaction.replied || interaction.deferred) {
         return;
       }
 
@@ -220,22 +227,31 @@ export class ErrorHandler {
         return text.length > max ? `${text.slice(0, max - 3)}...` : text;
       };
 
-      const userId = base.user?.id;
+      const userId = interaction.user?.id;
       const defaultLocale = getDefaultLocale();
       const get = (key: string) =>
         userId ? tWithUser(key, userId) : Promise.resolve(t(key, defaultLocale));
-      const [title, description, errorTypeLabel, severityLabel, messageLabel, commandLabel, stackLabel, unknownLabel, noStackLabel] =
-        await Promise.all([
-          get('errors.embedTitle'),
-          get('errors.embedDescription'),
-          get('errors.errorType'),
-          get('errors.severity'),
-          get('errors.messageLabel'),
-          get('errors.commandLabel'),
-          get('errors.stackLabel'),
-          get('errors.unknown'),
-          get('errors.noStack'),
-        ]);
+      const [
+        title,
+        description,
+        errorTypeLabel,
+        severityLabel,
+        messageLabel,
+        commandLabel,
+        stackLabel,
+        unknownLabel,
+        noStackLabel,
+      ] = await Promise.all([
+        get('errors.embedTitle'),
+        get('errors.embedDescription'),
+        get('errors.errorType'),
+        get('errors.severity'),
+        get('errors.messageLabel'),
+        get('errors.commandLabel'),
+        get('errors.stackLabel'),
+        get('errors.unknown'),
+        get('errors.noStack'),
+      ]);
 
       const embed = new EmbedBuilder()
         .setTitle(title)
@@ -264,7 +280,7 @@ export class ErrorHandler {
         );
       }
 
-      await base.reply({
+      await interaction.reply({
         embeds: [embed],
         flags: MessageFlags.Ephemeral,
       });
@@ -376,8 +392,11 @@ export async function safeDatabaseOperation<T>(
   operation: () => Promise<T>,
   context: ErrorContext = {}
 ): Promise<T | null> {
+  debugLog('errorHandler', 'safeDatabaseOperation', context);
   try {
-    return await operation();
+    const result = await operation();
+    debugLog('errorHandler', 'safeDatabaseOperation -> ok');
+    return result;
   } catch (error) {
     const botError = new BotError(
       'Database operation failed',
@@ -398,6 +417,7 @@ export async function safeDatabaseOperation<T>(
 export async function sendErrorToChannel(client: Client, error: BotError): Promise<void> {
   const channelId = process.env.ERROR_LOG_CHANNEL_ID;
   if (!channelId) return;
+  debugLog('errorHandler', 'sendErrorToChannel', { channelId, errorName: error.name });
   try {
     const channel = await client.channels.fetch(channelId);
     if (channel?.isTextBased()) {
@@ -422,8 +442,10 @@ export async function sendErrorToChannel(client: Client, error: BotError): Promi
         )
         .setTimestamp();
       await (channel as TextChannel).send({ embeds: [embed] });
+      debugLog('errorHandler', 'sendErrorToChannel -> sent');
     }
   } catch (err) {
+    debugLog('errorHandler', 'sendErrorToChannel failed', err);
     console.error('Failed to send error to log channel:', err);
   }
 }

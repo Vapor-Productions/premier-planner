@@ -3,9 +3,9 @@ import type { AutocompleteInteraction, CommandInteraction } from 'discord.js';
 import { ApplicationCommandOptionType, MessageFlags } from 'discord.js';
 import { Discord, Slash, SlashOption } from 'discordx';
 import {
-  type Locale,
   getAvailableLanguages,
   getLanguageName,
+  type Locale,
   t,
   tWithUser,
 } from '../../../utils/localization.js';

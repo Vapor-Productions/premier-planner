@@ -9,8 +9,10 @@ export const locales = {
         'Je hebt niet de juiste rechten om dit commando te gebruiken. (Permissie(s): {permission})',
       status: {
         madeby: 'Made by Vapor',
-        website: 'https://premierplanner.eu/docs'
+        website: 'https://docs.premierplanner.eu',
       },
+      maintenance:
+        'Deze functie is tijdelijk niet beschikbaar vanwege onderhoud. Probeer het later opnieuw.',
     },
 
     // Commands
@@ -63,11 +65,14 @@ export const locales = {
         commandCenter: '{botName} Command Center',
         welcome: 'Welkom bij het commandohub van {botName}!',
         categoriesTitle: 'Command Categorieën',
-        categoriesDescription1: 'Kies hieronder een categorie om beschikbare commando\'s te bekijken.',
-        categoriesDescription2: 'Elke categorie bevat gespecialiseerde commando\'s voor verschillende functies.',
-        categoryCommands: '{category} Commando\'s',
+        categoriesDescription1:
+          "Kies hieronder een categorie om beschikbare commando's te bekijken.",
+        categoriesDescription2:
+          "Elke categorie bevat gespecialiseerde commando's voor verschillende functies.",
+        categoryCommands: "{category} Commando's",
         accessDenied: 'Toegang geweigerd',
-        accessDeniedError: 'Alleen de persoon die het commando heeft uitgevoerd kan dit menu gebruiken!',
+        accessDeniedError:
+          'Alleen de persoon die het commando heeft uitgevoerd kan dit menu gebruiken!',
         accessDeniedHint: 'Voer het commando zelf uit om het helpmenu te openen.',
         selectPlaceholder: 'Kies een commandocategorie...',
       },
@@ -101,17 +106,21 @@ export const locales = {
         selectPlaceholder: 'Selecteer een optie om door te gaan',
         invalidSelection: 'Ongeldige selectie.',
         optionGeneral: 'Team Instellingen',
+        teamSettingsHint:
+          'Premier-teams beheer je met **`/team create`** (nieuw team), **`/team view`** (bekijken). Manage/verwijderen volgen later.',
         alreadySetup: 'Deze server is al ingesteld.',
         success: 'De bot is ingesteld voor deze server.',
         completeAllSteps: 'Voltooi eerst alle stappen voordat je kunt bevestigen.',
         completeAllFields: 'Vul alle verplichte velden in voordat je verder gaat.',
-        dataSaved: 'Teaminformatie is opgeslagen. Voeg nu leden toe en bevestig om het team aan te maken.',
+        dataSaved:
+          'Teaminformatie is opgeslagen. Voeg nu leden toe en bevestig om het team aan te maken.',
         teamCreated: 'Het team is succesvol aangemaakt.',
         guildNotFound: 'Kan de servercontext niet bepalen. Probeer het later opnieuw.',
         alreadyInTeam: 'Een of meer geselecteerde leden zitten al in een team.',
         teamLeaderCannotBeAdded: 'De teamleider kan niet als lid worden toegevoegd.',
         teamAlreadyExists: 'Er bestaat al een team met deze naam in deze server.',
-        premierTeamNotFound: 'Er is geen Premier-team gevonden met deze naam en tag. Controleer de gegevens en probeer het opnieuw.',
+        premierTeamNotFound:
+          'Er is geen Premier-team gevonden met deze naam en tag. Controleer de gegevens en probeer het opnieuw.',
       },
       fetchData: {
         description: 'Haal alle data op uit de SheetDB API.',
@@ -124,6 +133,46 @@ export const locales = {
         current: 'Je huidige taal is {language}.',
         available: 'Beschikbare talen',
       },
+      riot: {
+        noPrivilegedAccess:
+          'Je hebt geen toestemming voor dit commando. Je moet serverbeheerder zijn (of een rol met het juiste commando-recht, zoals de eigenaar heeft ingesteld), of je Discord-user-ID moet in BOT_DEV_IDS staan.',
+        botDevOnly:
+          'Dit commando is alleen voor bot developers: je Discord-user-ID moet in de omgevingsvariabele BOT_DEV_IDS staan.',
+        link: {
+          description: 'Koppel je Riot-account via Riot Sign-On.',
+          title: 'Riot-account koppelen',
+          instructions:
+            'Open de onderstaande link, log in bij Riot en keer terug naar Discord wanneer je klaar bent. De sessie verloopt na 15 minuten.',
+          openAuthorize: 'Inloggen bij Riot',
+          notConfigured:
+            'Riot Sign-On is niet geconfigureerd. Zet RIOT_CLIENT_ID, RIOT_REDIRECT_URI en RIOT_API_KEY (client secret) in de omgeving en start de bot opnieuw.',
+          redirectToBackup:
+            'Gebruik {mention} om je Riot-account te koppelen met je in-game naam en tag (HenrikDev).',
+        },
+        linkBackup: {
+          description: 'Reserve: koppel je Riot-account via Riot ID (HenrikDev API).',
+          gameName: 'In-game naam (voor #)',
+          tag: 'Riot-tag (na #)',
+          noApiKey:
+            'VAL_API_KEY ontbreekt. Zet je HenrikDev API-sleutel in de omgeving om dit commando te gebruiken.',
+          notFound: 'Geen Valorant-account gevonden voor deze naam en tag.',
+          puuidTaken: 'Deze Riot-account is al gekoppeld aan een andere Discord-gebruiker.',
+          success: 'Riot-account gekoppeld als **{name}#{tag}** (HenrikDev-reserve).',
+          apiError: 'HenrikDev-accountlookup mislukt. Probeer het later opnieuw.',
+        },
+        linkVerify: {
+          description: 'Koppel handmatig het Riot-account van een lid (alleen BOT_DEV_IDS).',
+          success: '{target} gekoppeld als **{name}#{tag}**.',
+          targetIsBot: 'Je kunt geen bot-account koppelen.',
+        },
+      },
+      team: {
+        memberOnPremierRoster: '✓ Op Premier-rooster',
+        memberNotOnPremierRoster: '✗ Niet op Premier-rooster (gekoppeld account)',
+        memberNoRiotLink: '… Geen Riot-koppeling — gebruik /riot link om te verifiëren',
+        premierRosterNotExposed:
+          'Premier-team gevonden, maar de HenrikDev-API levert geen roosterleden (lege lijst). Roostercontrole is hier niet mogelijk.',
+      },
     },
 
     // Categories
@@ -131,6 +180,7 @@ export const locales = {
       admin: 'Administratie',
       moderation: 'Moderatie',
       utility: 'Hulpmiddelen',
+      valorant: 'Valorant',
     },
 
     // Errors
@@ -164,9 +214,11 @@ export const locales = {
       permission:
         'You do not have the correct permissions to use this command. (Permission(s): {permission})',
       status: {
-          madeby: 'Made by Vapor',
-          website: 'https://premierplanner.eu/docs'
-       },
+        madeby: 'Made by Vapor',
+        website: 'https://docs.premierplanner.eu',
+      },
+      maintenance:
+        'This feature is temporarily unavailable due to maintenance. Please try again later.',
     },
 
     // Commands
@@ -217,10 +269,11 @@ export const locales = {
         category: 'Category',
         usage: 'Usage',
         commandCenter: '{botName} Command Center',
-        welcome: 'Welcome to {botName}\'s command hub!',
+        welcome: "Welcome to {botName}'s command hub!",
         categoriesTitle: 'Command Categories',
         categoriesDescription1: 'Choose a category below to explore available commands.',
-        categoriesDescription2: 'Each category contains specialized commands for different features.',
+        categoriesDescription2:
+          'Each category contains specialized commands for different features.',
         categoryCommands: '{category} Commands',
         accessDenied: 'Access Denied',
         accessDeniedError: 'Only the command executor can interact with this menu!',
@@ -257,6 +310,8 @@ export const locales = {
         selectPlaceholder: 'Select an option to continue',
         invalidSelection: 'Invalid selection.',
         optionGeneral: 'Team Settings',
+        teamSettingsHint:
+          'Manage Premier teams with **`/team create`** (new team) and **`/team view`** (view a team). More options will follow.',
         alreadySetup: 'This server is already set up.',
         success: 'The bot has been set up for this server.',
         completeAllSteps: 'Please complete all steps before confirming.',
@@ -267,7 +322,8 @@ export const locales = {
         alreadyInTeam: 'One or more selected members are already in a team.',
         teamLeaderCannotBeAdded: 'The team leader cannot be added as a member.',
         teamAlreadyExists: 'A team with this name already exists in this server.',
-        premierTeamNotFound: 'No Premier team was found with this name and tag. Check the details and try again.',
+        premierTeamNotFound:
+          'No Premier team was found with this name and tag. Check the details and try again.',
       },
       fetchData: {
         description: 'Fetch all data from the SheetDB API.',
@@ -280,6 +336,46 @@ export const locales = {
         current: 'Your current language is {language}.',
         available: 'Available languages',
       },
+      riot: {
+        noPrivilegedAccess:
+          'You do not have permission for this command. You must be a server administrator (or have the command permission your server owner configured), or your Discord user ID must be listed in BOT_DEV_IDS.',
+        botDevOnly:
+          'This command is for bot developers only: your Discord user ID must be listed in the BOT_DEV_IDS environment variable.',
+        link: {
+          description: 'Link your Riot account via Riot Sign-On.',
+          title: 'Link Riot account',
+          instructions:
+            'Open the link below, sign in with Riot, then return to Discord when done. The session expires after 15 minutes.',
+          openAuthorize: 'Sign in with Riot',
+          notConfigured:
+            'Riot Sign-On is not configured. Set RIOT_CLIENT_ID, RIOT_REDIRECT_URI, and RIOT_API_KEY (OAuth client secret) in the environment and restart the bot.',
+          redirectToBackup:
+            'Use {mention} to link your Riot account with your in-game name and tag (HenrikDev).',
+        },
+        linkBackup: {
+          description: 'Backup: link your Riot account using Riot ID (HenrikDev API).',
+          gameName: 'In-game name (before #)',
+          tag: 'Riot tag (after #)',
+          noApiKey:
+            'VAL_API_KEY is not set. Add your HenrikDev API key to the environment to use this command.',
+          notFound: 'No Valorant account was found for that name and tag.',
+          puuidTaken: 'This Riot account is already linked to another Discord user.',
+          success: 'Riot account linked as **{name}#{tag}** (Henrik backup).',
+          apiError: 'HenrikDev account lookup failed. Please try again later.',
+        },
+        linkVerify: {
+          description: 'Manually link a user Riot account (BOT_DEV_IDS only).',
+          success: 'Linked {target} as **{name}#{tag}**.',
+          targetIsBot: 'Cannot link a bot account.',
+        },
+      },
+      team: {
+        memberOnPremierRoster: '✓ On Premier roster',
+        memberNotOnPremierRoster: '✗ Not on Premier roster (linked account)',
+        memberNoRiotLink: '… No Riot link — use /riot link to verify',
+        premierRosterNotExposed:
+          'Premier team found, but the HenrikDev API returns no roster members (empty list). On-roster checks are unavailable.',
+      },
     },
 
     // Categories
@@ -287,6 +383,7 @@ export const locales = {
       admin: 'Administration',
       moderation: 'Moderation',
       utility: 'Utilities',
+      valorant: 'Valorant',
     },
 
     // Errors
@@ -321,7 +418,11 @@ export function getDefaultLocale(): Locale {
   return 'en';
 }
 
-export function t(key: string, locale: Locale = getDefaultLocale(), params?: Record<string, string>): string {
+export function t(
+  key: string,
+  locale: Locale = getDefaultLocale(),
+  params?: Record<string, string>
+): string {
   const keys = key.split('.');
   let value: unknown = locales[locale];
 
