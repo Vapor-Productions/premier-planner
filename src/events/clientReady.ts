@@ -47,6 +47,8 @@ export class Ready {
       bot.user?.setActivity(randomStatus.name, { type: randomStatus.type });
     }, 60000);
 
-    console.log(`Logged in as ${bot.user?.username}`);
+    // Pterodactyl node.js generic egg marks the server online when console matches
+    // config_startup.done (currently "Discord bot logged" / "Logged in on").
+    console.log(`Discord bot logged in as ${bot.user?.username}`);
   }
 }
