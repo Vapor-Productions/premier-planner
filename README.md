@@ -134,6 +134,16 @@ Copy `.env.example` to `.env` and fill it in. Only `DISCORD_TOKEN` and `DATABASE
 | `MAINTENANCE_MODE` | no | `1` pauses every command that checks maintenance |
 | `MAINTENANCE_COMMANDS` | no | Comma-separated command ids to pause, e.g. `riot.link,riot.link-backup` |
 
+## Discord Gateway Intents
+
+The bot requests only the `Guilds` intent. Team roster commands resolve Discord members with
+`guild.members.fetch(id)`, which is a REST lookup and does not require the privileged
+`GuildMembers` gateway intent.
+
+Do not add `GuildMembers`, `GuildMessages` or `MessageContent` unless the feature actually needs
+gateway events. Bringing prefix or message-driven commands back would also need a `messageCreate`
+handler that creates/updates user rows before command code runs.
+
 ## Error Logging to Discord Channel
 
 If you want errors to be reported to a specific Discord channel, set the `ERROR_LOG_CHANNEL_ID` environment variable in your `.env` file to the target channel's ID:
@@ -156,6 +166,20 @@ yarn prisma generate
 # Apply database migrations
 yarn prisma:migrate
 ```
+
+## Database Migrations
+
+The checked-in Prisma migration history is the source of truth for schema changes.
+
+- `prisma/migrations/0_init` is the baseline for the current `User`, `Team` and `TeamMember` tables.
+- `yarn prisma:migrate` runs `prisma migrate deploy`; it applies checked-in migrations only and
+  requires `DATABASE_URL`.
+- For schema edits, change `prisma/schema.prisma`, run `yarn prisma migrate dev --name <change>`,
+  review the generated SQL, then commit the new migration directory.
+- Production and panel starts should use `yarn start:migrate` or run `yarn prisma:migrate` before
+  `yarn start`. The Docker Compose app command already runs `prisma migrate deploy` against its
+  local `db` service.
+- `yarn build` generates the Prisma client and compiles TypeScript. It does not apply migrations.
 
 ## Development
 

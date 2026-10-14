@@ -20,6 +20,8 @@ model User {
   discordId String   @unique
   username  String
   language  String   @default("en")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   riotPuuid    String?   @unique
   riotGameName String?
@@ -31,9 +33,20 @@ model User {
 }
 ```
 
-`discordId` is the Discord-facing key; `id` is the uuid every relation points at. Relate to `user.id`, never to the Discord ID.
+`discordId` is the Discord-facing key; `id` is the UUID used by roster membership rows. `TeamMember.userId` points at `User.id`, while `Team.leaderId` points at `User.discordId` so command code can keep using Discord user IDs for ownership checks. Keep those two key choices distinct when writing raw SQL or new Prisma queries.
+
+`createdAt` and `updatedAt` are Prisma-managed. Inserts through Prisma set both values; manual SQL inserts must provide `updatedAt` because the baseline migration makes it `NOT NULL` with no database default.
 
 The Riot columns are filled by account linking (`saveLinkedRiotAccount`, from Riot Sign-On or the HenrikDev backup). `riotPuuid` is unique: linking a Riot account that another Discord user already linked returns `puuid_taken` instead of moving it.
+
+## Schema changes and migrations
+
+The current schema is managed by checked-in Prisma migrations, not `db push`.
+
+- `prisma/migrations/0_init` creates `User`, `Team` and `TeamMember` plus the unique and cascade constraints listed in `prisma/schema.prisma`.
+- `yarn prisma:migrate` runs `prisma migrate deploy` against `DATABASE_URL`.
+- `yarn start:migrate` applies pending migrations, then starts the built bot. Use it for panel or production starts that should self-apply migrations.
+- For future schema changes, edit `prisma/schema.prisma`, run `yarn prisma migrate dev --name <change>`, review the generated SQL and commit the migration directory with the code that needs it.
 
 ## When it fails
 
