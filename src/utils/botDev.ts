@@ -20,11 +20,12 @@ function isGuildAdministrator(interaction: CommandInteraction): boolean {
   if (!interaction.inGuild()) {
     return false;
   }
-  const m = interaction.member;
-  if (!m || typeof m.permissions === 'string') {
+  // Slash interactions expose permissions on `memberPermissions`, not on a resolved GuildMember.
+  const perms = interaction.memberPermissions;
+  if (!perms) {
     return false;
   }
-  return m.permissions.has(PermissionsBitField.Flags.Administrator);
+  return perms.has(PermissionsBitField.Flags.Administrator);
 }
 
 /**
