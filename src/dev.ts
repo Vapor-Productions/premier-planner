@@ -60,7 +60,13 @@ async function Reload() {
  * Initialize
  */
 async function run() {
-  const watcher = chokidar.watch(importPattern);
+  // chokidar 4+ has no glob support: handed the import glob, it matched nothing and hot reload
+  // silently never fired. Watch the folders and filter by extension instead.
+  const root = dirname(import.meta.url);
+  const watcher = chokidar.watch([`${root}/events`, `${root}/commands`], {
+    ignoreInitial: true,
+    ignored: (path, stats) => !!stats?.isFile() && !/\.(ts|js)$/.test(path),
+  });
 
   // Load commands
   await LoadFiles(importPattern);
