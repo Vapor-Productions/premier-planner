@@ -5,9 +5,15 @@ import { config } from 'dotenv';
 
 import { bot } from './bot.js';
 import { errorHandler } from './utils/errorHandler.js';
+import { startRiotLinkServer } from './utils/riot/linkServer.js';
 
 // Load environment variables from .env file
 config();
+
+// Allow JSON.stringify to handle BigInt values safely in dev
+(BigInt.prototype as unknown as { toJSON?: () => string }).toJSON ??= function (this: bigint) {
+  return this.toString();
+};
 
 // The following syntax should be used in the commonjs environment
 // const importPattern =  __dirname + "/{events,commands}/**/*.{ts,js}"
@@ -67,6 +73,8 @@ async function run() {
 
   // Log in with your bot token
   await bot.login(process.env.DISCORD_TOKEN);
+
+  startRiotLinkServer();
 
   // Set the client for error reporting
   errorHandler.setClient(bot);

@@ -8,10 +8,11 @@ export const locales = {
       permission:
         'Je hebt niet de juiste rechten om dit commando te gebruiken. (Permissie(s): {permission})',
       status: {
-        nightmt: 'NightMT',
         madeby: 'Made by Vapor',
-        invite: 'discord.gg/opminetopia',
+        website: 'https://docs.premierplanner.eu',
       },
+      maintenance:
+        'Deze functie is tijdelijk niet beschikbaar vanwege onderhoud. Probeer het later opnieuw.',
     },
 
     // Commands
@@ -61,6 +62,19 @@ export const locales = {
         title: "NightMT Bot Commando's",
         category: 'Categorie',
         usage: 'Gebruik',
+        commandCenter: '{botName} Command Center',
+        welcome: 'Welkom bij het commandohub van {botName}!',
+        categoriesTitle: 'Command Categorieën',
+        categoriesDescription1:
+          "Kies hieronder een categorie om beschikbare commando's te bekijken.",
+        categoriesDescription2:
+          "Elke categorie bevat gespecialiseerde commando's voor verschillende functies.",
+        categoryCommands: "{category} Commando's",
+        accessDenied: 'Toegang geweigerd',
+        accessDeniedError:
+          'Alleen de persoon die het commando heeft uitgevoerd kan dit menu gebruiken!',
+        accessDeniedHint: 'Voer het commando zelf uit om het helpmenu te openen.',
+        selectPlaceholder: 'Kies een commandocategorie...',
       },
       info: {
         description: 'Toon informatie over de bot.',
@@ -85,16 +99,28 @@ export const locales = {
       setup: {
         description: 'Stel de bot in voor deze server.',
         title: 'Admin Setup Center',
+        header: 'Setup',
+        intro: 'Dit commando wordt gebruikt om de bot in te stellen.',
+        menuTitle: 'Setup Menu',
+        menuDescription: 'Selecteer een optie om door te gaan.',
+        selectPlaceholder: 'Selecteer een optie om door te gaan',
+        invalidSelection: 'Ongeldige selectie.',
+        optionGeneral: 'Team Instellingen',
+        teamSettingsHint:
+          'Premier-teams beheer je met **`/team create`** (nieuw team), **`/team view`** (bekijken). Manage/verwijderen volgen later.',
         alreadySetup: 'Deze server is al ingesteld.',
         success: 'De bot is ingesteld voor deze server.',
-        ticketChannelTitle: 'Ticket Channel',
-        ticketChannelDescription: 'Kies een kanaal voor de ticket systemen',
-        ticketChannelPlaceholder: 'Kies een kanaal voor de ticket systemen',
-        ticketButtonLabel: 'Ticket System',
-        automodButtonLabel: 'Automod System',
-        ticketCategoryTitle: 'Ticket Category',
-        ticketCategoryDescription: 'Kies een categorie voor de ticket systemen',
-        ticketCategoryPlaceholder: 'Kies een categorie voor de ticket systemen',
+        completeAllSteps: 'Voltooi eerst alle stappen voordat je kunt bevestigen.',
+        completeAllFields: 'Vul alle verplichte velden in voordat je verder gaat.',
+        dataSaved:
+          'Teaminformatie is opgeslagen. Voeg nu leden toe en bevestig om het team aan te maken.',
+        teamCreated: 'Het team is succesvol aangemaakt.',
+        guildNotFound: 'Kan de servercontext niet bepalen. Probeer het later opnieuw.',
+        alreadyInTeam: 'Een of meer geselecteerde leden zitten al in een team.',
+        teamLeaderCannotBeAdded: 'De teamleider kan niet als lid worden toegevoegd.',
+        teamAlreadyExists: 'Er bestaat al een team met deze naam in deze server.',
+        premierTeamNotFound:
+          'Er is geen Premier-team gevonden met deze naam en tag. Controleer de gegevens en probeer het opnieuw.',
       },
       fetchData: {
         description: 'Haal alle data op uit de SheetDB API.',
@@ -107,6 +133,46 @@ export const locales = {
         current: 'Je huidige taal is {language}.',
         available: 'Beschikbare talen',
       },
+      riot: {
+        noPrivilegedAccess:
+          'Je hebt geen toestemming voor dit commando. Je moet serverbeheerder zijn (of een rol met het juiste commando-recht, zoals de eigenaar heeft ingesteld), of je Discord-user-ID moet in BOT_DEV_IDS staan.',
+        botDevOnly:
+          'Dit commando is alleen voor bot developers: je Discord-user-ID moet in de omgevingsvariabele BOT_DEV_IDS staan.',
+        link: {
+          description: 'Koppel je Riot-account via Riot Sign-On.',
+          title: 'Riot-account koppelen',
+          instructions:
+            'Open de onderstaande link, log in bij Riot en keer terug naar Discord wanneer je klaar bent. De sessie verloopt na 15 minuten.',
+          openAuthorize: 'Inloggen bij Riot',
+          notConfigured:
+            'Riot Sign-On is niet geconfigureerd. Zet RIOT_CLIENT_ID, RIOT_REDIRECT_URI en RIOT_API_KEY (client secret) in de omgeving en start de bot opnieuw.',
+          redirectToBackup:
+            'Gebruik {mention} om je Riot-account te koppelen met je in-game naam en tag (HenrikDev).',
+        },
+        linkBackup: {
+          description: 'Reserve: koppel je Riot-account via Riot ID (HenrikDev API).',
+          gameName: 'In-game naam (voor #)',
+          tag: 'Riot-tag (na #)',
+          noApiKey:
+            'VAL_API_KEY ontbreekt. Zet je HenrikDev API-sleutel in de omgeving om dit commando te gebruiken.',
+          notFound: 'Geen Valorant-account gevonden voor deze naam en tag.',
+          puuidTaken: 'Deze Riot-account is al gekoppeld aan een andere Discord-gebruiker.',
+          success: 'Riot-account gekoppeld als **{name}#{tag}** (HenrikDev-reserve).',
+          apiError: 'HenrikDev-accountlookup mislukt. Probeer het later opnieuw.',
+        },
+        linkVerify: {
+          description: 'Koppel handmatig het Riot-account van een lid (alleen BOT_DEV_IDS).',
+          success: '{target} gekoppeld als **{name}#{tag}**.',
+          targetIsBot: 'Je kunt geen bot-account koppelen.',
+        },
+      },
+      team: {
+        memberOnPremierRoster: '✓ Op Premier-rooster',
+        memberNotOnPremierRoster: '✗ Niet op Premier-rooster (gekoppeld account)',
+        memberNoRiotLink: '… Geen Riot-koppeling — gebruik /riot link om te verifiëren',
+        premierRosterNotExposed:
+          'Premier-team gevonden, maar de HenrikDev-API levert geen roosterleden (lege lijst). Roostercontrole is hier niet mogelijk.',
+      },
     },
 
     // Categories
@@ -114,6 +180,7 @@ export const locales = {
       admin: 'Administratie',
       moderation: 'Moderatie',
       utility: 'Hulpmiddelen',
+      valorant: 'Valorant',
     },
 
     // Errors
@@ -127,6 +194,15 @@ export const locales = {
       cannotKickSelf: 'Je kunt jezelf niet kicken.',
       cannotTimeoutSelf: 'Je kunt jezelf geen timeout geven.',
       botMissingPermission: 'Ik heb niet de juiste rechten om deze actie uit te voeren.',
+      embedTitle: '❌ Er is een fout opgetreden',
+      embedDescription: 'Er is een onverwachte fout opgetreden bij het verwerken van je verzoek.',
+      errorType: 'Fouttype',
+      severity: 'Ernst',
+      messageLabel: 'Bericht',
+      commandLabel: 'Commando',
+      stackLabel: 'Stack',
+      unknown: 'Onbekend',
+      noStack: 'Geen stack trace',
     },
   },
   en: {
@@ -138,10 +214,11 @@ export const locales = {
       permission:
         'You do not have the correct permissions to use this command. (Permission(s): {permission})',
       status: {
-        nightmt: 'NightMT',
         madeby: 'Made by Vapor',
-        invite: 'discord.gg/opminetopia',
+        website: 'https://docs.premierplanner.eu',
       },
+      maintenance:
+        'This feature is temporarily unavailable due to maintenance. Please try again later.',
     },
 
     // Commands
@@ -191,6 +268,17 @@ export const locales = {
         title: 'NightMT Bot Commands',
         category: 'Category',
         usage: 'Usage',
+        commandCenter: '{botName} Command Center',
+        welcome: "Welcome to {botName}'s command hub!",
+        categoriesTitle: 'Command Categories',
+        categoriesDescription1: 'Choose a category below to explore available commands.',
+        categoriesDescription2:
+          'Each category contains specialized commands for different features.',
+        categoryCommands: '{category} Commands',
+        accessDenied: 'Access Denied',
+        accessDeniedError: 'Only the command executor can interact with this menu!',
+        accessDeniedHint: 'Run the command yourself to access the help menu.',
+        selectPlaceholder: 'Choose a command category...',
       },
       info: {
         description: 'Show information about the bot.',
@@ -215,16 +303,27 @@ export const locales = {
       setup: {
         description: 'Set up the bot for this server.',
         title: 'Admin Setup Center',
+        header: 'Setup',
+        intro: 'This command is used to setup the bot.',
+        menuTitle: 'Setup Menu',
+        menuDescription: 'Select an option to continue.',
+        selectPlaceholder: 'Select an option to continue',
+        invalidSelection: 'Invalid selection.',
+        optionGeneral: 'Team Settings',
+        teamSettingsHint:
+          'Manage Premier teams with **`/team create`** (new team) and **`/team view`** (view a team). More options will follow.',
         alreadySetup: 'This server is already set up.',
         success: 'The bot has been set up for this server.',
-        ticketChannelTitle: 'Ticket Channel',
-        ticketChannelDescription: 'Choose a channel for the ticket systems',
-        ticketChannelPlaceholder: 'Choose a channel for the ticket systems',
-        ticketButtonLabel: 'Ticket System',
-        automodButtonLabel: 'Automod System',
-        ticketCategoryTitle: 'Ticket Category',
-        ticketCategoryDescription: 'Choose a category for the ticket systems',
-        ticketCategoryPlaceholder: 'Choose a category for the ticket systems',
+        completeAllSteps: 'Please complete all steps before confirming.',
+        completeAllFields: 'Please fill in all required fields before continuing.',
+        dataSaved: 'Team data has been saved. Now add members and confirm to create the team.',
+        teamCreated: 'Team has been created successfully.',
+        guildNotFound: 'Could not determine the server context. Please try again later.',
+        alreadyInTeam: 'One or more selected members are already in a team.',
+        teamLeaderCannotBeAdded: 'The team leader cannot be added as a member.',
+        teamAlreadyExists: 'A team with this name already exists in this server.',
+        premierTeamNotFound:
+          'No Premier team was found with this name and tag. Check the details and try again.',
       },
       fetchData: {
         description: 'Fetch all data from the SheetDB API.',
@@ -237,6 +336,46 @@ export const locales = {
         current: 'Your current language is {language}.',
         available: 'Available languages',
       },
+      riot: {
+        noPrivilegedAccess:
+          'You do not have permission for this command. You must be a server administrator (or have the command permission your server owner configured), or your Discord user ID must be listed in BOT_DEV_IDS.',
+        botDevOnly:
+          'This command is for bot developers only: your Discord user ID must be listed in the BOT_DEV_IDS environment variable.',
+        link: {
+          description: 'Link your Riot account via Riot Sign-On.',
+          title: 'Link Riot account',
+          instructions:
+            'Open the link below, sign in with Riot, then return to Discord when done. The session expires after 15 minutes.',
+          openAuthorize: 'Sign in with Riot',
+          notConfigured:
+            'Riot Sign-On is not configured. Set RIOT_CLIENT_ID, RIOT_REDIRECT_URI, and RIOT_API_KEY (OAuth client secret) in the environment and restart the bot.',
+          redirectToBackup:
+            'Use {mention} to link your Riot account with your in-game name and tag (HenrikDev).',
+        },
+        linkBackup: {
+          description: 'Backup: link your Riot account using Riot ID (HenrikDev API).',
+          gameName: 'In-game name (before #)',
+          tag: 'Riot tag (after #)',
+          noApiKey:
+            'VAL_API_KEY is not set. Add your HenrikDev API key to the environment to use this command.',
+          notFound: 'No Valorant account was found for that name and tag.',
+          puuidTaken: 'This Riot account is already linked to another Discord user.',
+          success: 'Riot account linked as **{name}#{tag}** (Henrik backup).',
+          apiError: 'HenrikDev account lookup failed. Please try again later.',
+        },
+        linkVerify: {
+          description: 'Manually link a user Riot account (BOT_DEV_IDS only).',
+          success: 'Linked {target} as **{name}#{tag}**.',
+          targetIsBot: 'Cannot link a bot account.',
+        },
+      },
+      team: {
+        memberOnPremierRoster: '✓ On Premier roster',
+        memberNotOnPremierRoster: '✗ Not on Premier roster (linked account)',
+        memberNoRiotLink: '… No Riot link — use /riot link to verify',
+        premierRosterNotExposed:
+          'Premier team found, but the HenrikDev API returns no roster members (empty list). On-roster checks are unavailable.',
+      },
     },
 
     // Categories
@@ -244,6 +383,7 @@ export const locales = {
       admin: 'Administration',
       moderation: 'Moderation',
       utility: 'Utilities',
+      valorant: 'Valorant',
     },
 
     // Errors
@@ -257,136 +397,15 @@ export const locales = {
       cannotKickSelf: 'You cannot kick yourself.',
       cannotTimeoutSelf: 'You cannot timeout yourself.',
       botMissingPermission: 'I do not have the correct permissions to perform this action.',
-    },
-  },
-  es: {
-    // Bot responses
-    bot: {
-      ready: '¡Bot está listo y en línea!',
-      shutdown: 'Bot se está cerrando...',
-      error: 'Ha ocurrido un error',
-      permission:
-        'No tienes los permisos correctos para usar este comando. (Permiso(s): {permission})',
-      status: {
-        nightmt: 'NightMT',
-        madeby: 'Made by Vapor',
-        invite: 'discord.gg/opminetopia',
-      },
-    },
-
-    // Commands
-    commands: {
-      sendmessage: {
-        description: 'Enviar un mensaje a un canal.',
-        channel: 'El canal donde se debe enviar el mensaje.',
-        message: 'El mensaje a enviar.',
-        success: 'Mensaje enviado a {channel}.',
-      },
-      ban: {
-        description: 'Expulsar a un miembro del servidor.',
-        member: 'El miembro a expulsar.',
-        reason: 'La razón de la expulsión.',
-        success: 'El usuario {user} ha sido expulsado del servidor.',
-        userMessage: 'Has sido expulsado de {guild} por {moderator}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      kick: {
-        description: 'Expulsar temporalmente a un miembro del servidor.',
-        member: 'El miembro a expulsar.',
-        reason: 'La razón de la expulsión.',
-        success: 'El usuario {user} ha sido expulsado del servidor.',
-        userMessage: 'Has sido expulsado de {guild} por {moderator}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      timeout: {
-        description: 'Dar un timeout a un miembro.',
-        member: 'El miembro al que dar timeout.',
-        duration: 'La duración del timeout (ej. 1h, 30m, 1d).',
-        reason: 'La razón del timeout.',
-        success: 'El usuario {user} ha recibido un timeout de {duration}.',
-        removed: 'El timeout para {user} ha sido removido exitosamente.',
-        userMessage: 'Has recibido un timeout de {duration} en {guild} por {moderator}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      warn: {
-        description: 'Advertir a un miembro.',
-        member: 'El miembro a advertir.',
-        reason: 'La razón de la advertencia.',
-        success: 'El usuario {user} ha sido advertido.',
-        userMessage: 'Has sido advertido por {moderator} en {guild}.',
-        noReason: 'Sin razón proporcionada',
-      },
-      help: {
-        description: 'Mostrar todos los comandos disponibles.',
-        title: 'Comandos del Bot NightMT',
-        category: 'Categoría',
-        usage: 'Uso',
-      },
-      info: {
-        description: 'Mostrar información sobre el bot.',
-        title: 'Información del Bot',
-        version: 'Versión',
-        uptime: 'Tiempo activo',
-        serverCount: 'Número de servidores',
-      },
-      ping: {
-        description: 'Probar la latencia del bot.',
-        response: '¡Pong! Latencia: {latency}ms',
-      },
-      profile: {
-        description: 'Mostrar el perfil de un usuario.',
-        user: 'El usuario del que mostrar información.',
-        title: 'Perfil de {username}',
-        joined: 'Miembro desde',
-        roles: 'Roles',
-        infractions: 'Infracciones',
-        action: 'Qué quieres hacer con tu perfil',
-      },
-      setup: {
-        description: 'Configurar el bot para este servidor.',
-        title: 'Centro de Configuración Admin',
-        alreadySetup: 'Este servidor ya está configurado.',
-        success: 'El bot ha sido configurado para este servidor.',
-        ticketChannelTitle: 'Canal de Tickets',
-        ticketChannelDescription: 'Elige un canal para los sistemas de tickets',
-        ticketChannelPlaceholder: 'Elige un canal para los sistemas de tickets',
-        ticketButtonLabel: 'Sistema de Tickets',
-        automodButtonLabel: 'Sistema de Automod',
-        ticketCategoryTitle: 'Categoría de Tickets',
-        ticketCategoryDescription: 'Elige una categoría para los sistemas de tickets',
-        ticketCategoryPlaceholder: 'Elige una categoría para los sistemas de tickets',
-      },
-      fetchData: {
-        description: 'Obtener todos los datos de la API de SheetDB.',
-        success: 'Obtenidos {count} filas de datos',
-      },
-      language: {
-        description: 'Cambiar tu preferencia de idioma.',
-        language: 'El idioma al que cambiar.',
-        success: 'Tu idioma ha sido cambiado a {language}.',
-        current: 'Tu idioma actual es {language}.',
-        available: 'Idiomas disponibles',
-      },
-    },
-
-    // Categories
-    categories: {
-      admin: 'Administración',
-      moderation: 'Moderación',
-      utility: 'Utilidades',
-    },
-
-    // Errors
-    errors: {
-      userNotFound: 'Usuario no encontrado.',
-      invalidDuration: 'Duración inválida proporcionada.',
-      alreadyBanned: 'Este usuario ya está expulsado.',
-      alreadyKicked: 'Este usuario ya fue expulsado.',
-      alreadyTimedOut: 'Este usuario ya tiene un timeout.',
-      cannotBanSelf: 'No puedes expulsarte a ti mismo.',
-      cannotKickSelf: 'No puedes expulsarte a ti mismo.',
-      cannotTimeoutSelf: 'No puedes darte timeout a ti mismo.',
-      botMissingPermission: 'No tengo los permisos correctos para realizar esta acción.',
+      embedTitle: '❌ Error Occurred',
+      embedDescription: 'An unexpected error occurred while processing your request.',
+      errorType: 'Error Type',
+      severity: 'Severity',
+      messageLabel: 'Message',
+      commandLabel: 'Command',
+      stackLabel: 'Stack',
+      unknown: 'Unknown',
+      noStack: 'No stack trace',
     },
   },
 };
@@ -394,7 +413,16 @@ export const locales = {
 export type Locale = keyof typeof locales;
 export type LocaleKey = keyof typeof locales.nl;
 
-export function t(key: string, locale: Locale = 'nl', params?: Record<string, string>): string {
+/** Default locale when no user context is available (e.g. bot startup, process exit) */
+export function getDefaultLocale(): Locale {
+  return 'en';
+}
+
+export function t(
+  key: string,
+  locale: Locale = getDefaultLocale(),
+  params?: Record<string, string>
+): string {
   const keys = key.split('.');
   let value: unknown = locales[locale];
 
@@ -425,16 +453,16 @@ export async function tWithUser(
   try {
     const { getUserByDiscordId } = await import('./userManager');
     const user = await getUserByDiscordId(userId);
-    const userLocale = (user?.language as Locale) || 'nl';
+    const userLocale = (user?.language as Locale) || getDefaultLocale();
     return t(key, userLocale, params);
   } catch (error) {
     console.error('Error getting user language:', error);
-    return t(key, 'nl', params); // Fallback to Dutch
+    return t(key, getDefaultLocale(), params);
   }
 }
 
 export function getLocale(): Locale {
-  return 'nl'; // Default to Dutch
+  return getDefaultLocale();
 }
 
 /**

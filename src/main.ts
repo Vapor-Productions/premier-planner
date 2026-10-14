@@ -3,11 +3,17 @@ import { config } from 'dotenv';
 
 import { bot } from './bot.js';
 import { errorHandler, setupGlobalErrorHandlers } from './utils/errorHandler.js';
-import { t } from './utils/localization.js';
+import { getDefaultLocale, t } from './utils/localization.js';
+import { startRiotLinkServer, stopRiotLinkServer } from './utils/riot/linkServer.js';
 import { closePrismaConnection } from './utils/userManager.js';
 
 // Load environment variables from .env file
 config();
+
+// Allow JSON.stringify to handle BigInt values safely
+(BigInt.prototype as unknown as { toJSON?: () => string }).toJSON ??= function (this: bigint) {
+  return this.toString();
+};
 
 async function run() {
   // Setup global error handlers
@@ -28,6 +34,8 @@ async function run() {
   // Log in with your bot token
   await bot.login(process.env.DISCORD_TOKEN);
 
+  startRiotLinkServer();
+
   // Delete global commands on startup
   await bot.clearApplicationCommands(...bot.guilds.cache.map((g) => g.id));
 
@@ -36,13 +44,15 @@ async function run() {
 
   // Handle graceful shutdown
   process.on('SIGINT', async () => {
-    console.log(t('bot.shutdown'));
+    console.log(t('bot.shutdown', getDefaultLocale()));
+    await stopRiotLinkServer();
     await closePrismaConnection();
     process.exit(0);
   });
 
   process.on('SIGTERM', async () => {
-    console.log(t('bot.shutdown'));
+    console.log(t('bot.shutdown', getDefaultLocale()));
+    await stopRiotLinkServer();
     await closePrismaConnection();
     process.exit(0);
   });

@@ -2,12 +2,11 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Try Prisma Accelerate: https://pris.ly/d/accelerate
 
 generator client {
-  provider   = "prisma-client-js"
-  output     = "../src/generated/prisma"
-  engineType = "binary"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -18,24 +17,44 @@ model User {
   id        String   @id @default(uuid())
   discordId String   @unique
   username  String
-  language  String   @default("nl")
+  language  String   @default("en")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  riotPuuid     String?   @unique
+  riotGameName  String?
+  riotTagLine   String?
+  riotLinkedAt  DateTime?
+
+  teamMemberships TeamMember[]
+  leader          Team[]       @relation("TeamLeader")
 }
 
-model Setup {
-  id                 Int      @id @default(autoincrement())
-  guildId            String   @unique
-  ticketChannelId    String?  @default("")
-  ticketCategoryId   String?  @default("")
-  ticketStaffRoleId  String?  @default("")
-  ticketLogChannelId String?  @default("")
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+model Team {
+  id        String   @id @default(uuid())
+  name      String
+  teamTag   String   @default("")
+  guildId   String
+  leader    User?    @relation("TeamLeader", fields: [leaderId], references: [discordId])
+  leaderId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  automodEnabled           Boolean  @default(false)
-  automodChannelId         String?  @default("")
-  automodRoleId            String?  @default("")
-  automodChannelExceptions String[] @default([])
-  automodRoleExceptions    String[] @default([])
+  memberLinks TeamMember[]
+
+  @@index([guildId])
+  @@unique([name, teamTag])
+}
+
+/// Explicit join: one row per user on a team’s roster (readable in SQL tools: teamId + userId + FKs).
+model TeamMember {
+  id     String @id @default(uuid())
+  teamId String
+  userId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([teamId])
+  @@index([userId])
 }

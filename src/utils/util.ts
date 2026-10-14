@@ -1,6 +1,8 @@
 import { type ColorResolvable, EmbedBuilder, type Message } from 'discord.js';
 import type { Client } from 'discordx';
 
+import { debugLog } from './debug.js';
+
 /**
  * Capitalises the first letter of each word in a string.
  * @param str - The string to be capitalised.
@@ -52,6 +54,7 @@ export function responseEmbed(type: ResponseType, content: string) {
 }
 
 export async function getCommandIds(client: Client): Promise<Record<string, string>> {
+  debugLog('util', 'getCommandIds');
   if (!client.application) {
     throw new Error('Client application is not available');
   }
@@ -63,6 +66,7 @@ export async function getCommandIds(client: Client): Promise<Record<string, stri
   if (!isGuildOnly) {
     try {
       const globalCommands = await client.application.commands.fetch();
+      debugLog('util', 'getCommandIds global commands', { count: globalCommands.size });
       for (const cmd of globalCommands.values()) {
         commandIds.set(cmd.name, cmd.id);
       }
@@ -75,6 +79,10 @@ export async function getCommandIds(client: Client): Promise<Record<string, stri
   const guildPromises = Array.from(client.guilds.cache.values()).map(async (guild) => {
     try {
       const guildCommands = await guild.commands.fetch();
+      debugLog('util', 'getCommandIds guild commands', {
+        guild: guild.name,
+        count: guildCommands.size,
+      });
       for (const cmd of guildCommands.values()) {
         commandIds.set(cmd.name, cmd.id);
       }
@@ -85,7 +93,33 @@ export async function getCommandIds(client: Client): Promise<Record<string, stri
 
   await Promise.allSettled(guildPromises);
 
-  return Object.fromEntries(commandIds);
+  const out = Object.fromEntries(commandIds);
+  debugLog('util', 'getCommandIds ->', { names: Object.keys(out) });
+  return out;
+}
+
+/**
+ * Builds a Discord slash command mention, e.g. `</riot link-backup:123>` (same pattern as help).
+ * Falls back to `/parent sub` if the root command id is not cached yet.
+ */
+export async function getSlashCommandMention(
+  client: Client,
+  ...pathSegments: string[]
+): Promise<string> {
+  debugLog('util', 'getSlashCommandMention', { pathSegments });
+  if (pathSegments.length === 0) {
+    throw new Error('getSlashCommandMention requires at least one segment');
+  }
+  const ids = await getCommandIds(client);
+  const root = pathSegments[0];
+  const id = ids[root];
+  if (!id) {
+    debugLog('util', 'getSlashCommandMention fallback (no id)');
+    return `/${pathSegments.join(' ')}`;
+  }
+  const mention = `</${pathSegments.join(' ')}:${id}>`;
+  debugLog('util', 'getSlashCommandMention ->', mention);
+  return mention;
 }
 
 /**

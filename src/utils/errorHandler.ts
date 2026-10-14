@@ -1,5 +1,7 @@
 import type { Client, CommandInteraction, Interaction, Message, TextChannel } from 'discord.js';
-import { EmbedBuilder, MessageFlags } from 'discord.js';
+import { EmbedBuilder, InteractionType, MessageFlags } from 'discord.js';
+import { debugLog } from './debug.js';
+import { getDefaultLocale, t, tWithUser } from './localization.js';
 
 /**
  * Error severity levels
@@ -76,7 +78,7 @@ export class ErrorHandler {
    */
   public async handleError(
     error: Error | BotError,
-    interaction?: CommandInteraction,
+    interaction?: CommandInteraction | Interaction,
     context?: ErrorContext
   ): Promise<void> {
     const botError =
@@ -92,6 +94,27 @@ export class ErrorHandler {
       await sendErrorToChannel(this.client, botError);
     }
 
+    // If the original error is a Discord "Unknown interaction" (10062) or
+    // "Interaction has already been acknowledged" (40060), don't attempt to
+    // send an error reply back to the user – the token is no longer valid.
+    const cause = botError.cause;
+    const discordCode =
+      cause &&
+      typeof cause === 'object' &&
+      'code' in cause &&
+      typeof (cause as { code: unknown }).code === 'number'
+        ? (cause as { code: number }).code
+        : undefined;
+    if (discordCode === 10062 || discordCode === 40060) {
+      return;
+    }
+
+    // Double reply / update+reply on the same interaction (harmless user bug in flow)
+    const causeName = cause instanceof Error ? cause.name : '';
+    if (causeName === 'InteractionAlreadyReplied') {
+      return;
+    }
+
     // Check if we're hitting error rate limits
     if (this.isErrorRateLimited(botError)) {
       console.warn('Error rate limit exceeded, skipping user notification');
@@ -99,7 +122,7 @@ export class ErrorHandler {
     }
 
     // Provide user feedback if interaction is available
-    if (interaction && !interaction.replied && !interaction.deferred) {
+    if (interaction) {
       await this.sendErrorResponse(interaction, botError);
     }
   }
@@ -157,53 +180,101 @@ export class ErrorHandler {
     if (context.channelId) {
       console.error(`  Channel: ${context.channelId}`);
     }
-    if (
-      error.cause &&
-      typeof error.cause === 'object' &&
-      error.cause !== null &&
-      'message' in error.cause
-    ) {
-      console.error(`  Caused by: ${(error.cause as Error).message}`);
+    if (error.cause && typeof error.cause === 'object' && error.cause !== null) {
+      const cause = error.cause as Error;
+      if ('message' in cause) {
+        console.error(`  Caused by: ${cause.message}`);
+      }
+      if (cause.stack) {
+        console.error('  Original Stack:');
+        console.error(cause.stack);
+      }
     }
     if (context.additionalData) {
       console.error(`  Additional Data:`, context.additionalData);
     }
 
-    console.error(`  Stack: ${error.stack}`);
+    if (error.stack) {
+      console.error('  Wrapped Stack:');
+      console.error(error.stack);
+    }
   }
 
   /**
    * Send error response to user
+   *
+   * Only runs for interactions that support `.reply()` and have not been acknowledged yet.
    */
-  private async sendErrorResponse(interaction: CommandInteraction, error: BotError): Promise<void> {
+  private async sendErrorResponse(
+    interaction: CommandInteraction | Interaction,
+    error: BotError
+  ): Promise<void> {
     try {
+      if (interaction.type === InteractionType.ApplicationCommandAutocomplete) {
+        return;
+      }
+
+      if (!interaction.isRepliable()) {
+        return;
+      }
+
+      if (interaction.replied || interaction.deferred) {
+        return;
+      }
+
       const truncate = (text: string, max = 1000): string => {
         if (!text) return '';
         return text.length > max ? `${text.slice(0, max - 3)}...` : text;
       };
 
+      const userId = interaction.user?.id;
+      const defaultLocale = getDefaultLocale();
+      const get = (key: string) =>
+        userId ? tWithUser(key, userId) : Promise.resolve(t(key, defaultLocale));
+      const [
+        title,
+        description,
+        errorTypeLabel,
+        severityLabel,
+        messageLabel,
+        commandLabel,
+        stackLabel,
+        unknownLabel,
+        noStackLabel,
+      ] = await Promise.all([
+        get('errors.embedTitle'),
+        get('errors.embedDescription'),
+        get('errors.errorType'),
+        get('errors.severity'),
+        get('errors.messageLabel'),
+        get('errors.commandLabel'),
+        get('errors.stackLabel'),
+        get('errors.unknown'),
+        get('errors.noStack'),
+      ]);
+
       const embed = new EmbedBuilder()
-        .setTitle('❌ Error Occurred')
+        .setTitle(title)
         .setColor('#ff0000')
-        .setDescription('An unexpected error occurred while processing your request.')
+        .setDescription(description)
         .addFields(
-          { name: 'Error Type', value: error.name, inline: true },
-          { name: 'Severity', value: error.severity, inline: true }
+          { name: errorTypeLabel, value: error.name, inline: true },
+          { name: severityLabel, value: error.severity, inline: true }
         )
         .setTimestamp();
 
       // Add more details for development
       if (process.env.NODE_ENV === 'development') {
         embed.addFields(
-          { name: 'Message', value: truncate(error.message), inline: false },
+          { name: messageLabel, value: truncate(error.message), inline: false },
           {
-            name: 'Command',
-            value: error.context.command || 'Unknown',
+            name: commandLabel,
+            value: error.context.command || unknownLabel,
             inline: true,
           },
           {
-            name: 'Stack',
-            value: truncate(error.stack || 'No stack trace'),
+            name: stackLabel,
+            value: truncate(error.stack || noStackLabel),
             inline: false,
           }
         );
@@ -228,7 +299,7 @@ export class ErrorHandler {
 
     // Clean old entries
     this.errorCount.forEach((_count, errorKey) => {
-      if (errorKey.includes('-') && parseInt(errorKey.split('-')[0]) < oneMinuteAgo) {
+      if (errorKey.includes('-') && parseInt(errorKey.split('-')[0], 10) < oneMinuteAgo) {
         this.errorCount.delete(errorKey);
       }
     });
@@ -321,8 +392,11 @@ export async function safeDatabaseOperation<T>(
   operation: () => Promise<T>,
   context: ErrorContext = {}
 ): Promise<T | null> {
+  debugLog('errorHandler', 'safeDatabaseOperation', context);
   try {
-    return await operation();
+    const result = await operation();
+    debugLog('errorHandler', 'safeDatabaseOperation -> ok');
+    return result;
   } catch (error) {
     const botError = new BotError(
       'Database operation failed',
@@ -343,6 +417,7 @@ export async function safeDatabaseOperation<T>(
 export async function sendErrorToChannel(client: Client, error: BotError): Promise<void> {
   const channelId = process.env.ERROR_LOG_CHANNEL_ID;
   if (!channelId) return;
+  debugLog('errorHandler', 'sendErrorToChannel', { channelId, errorName: error.name });
   try {
     const channel = await client.channels.fetch(channelId);
     if (channel?.isTextBased()) {
@@ -355,14 +430,22 @@ export async function sendErrorToChannel(client: Client, error: BotError): Promi
           { name: 'Message', value: error.message, inline: false },
           {
             name: 'Context',
-            value: JSON.stringify(error.context, null, 2).slice(0, 1000) || 'None',
+            value:
+              Object.keys(error.context).length > 0
+                ? Object.entries(error.context)
+                    .map(([key, value]) => `• ${key}: ${String(value)}`)
+                    .join('\n')
+                    .slice(0, 1000)
+                : 'None',
             inline: false,
           }
         )
         .setTimestamp();
       await (channel as TextChannel).send({ embeds: [embed] });
+      debugLog('errorHandler', 'sendErrorToChannel -> sent');
     }
   } catch (err) {
+    debugLog('errorHandler', 'sendErrorToChannel failed', err);
     console.error('Failed to send error to log channel:', err);
   }
 }
