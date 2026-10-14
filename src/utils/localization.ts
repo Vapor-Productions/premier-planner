@@ -451,7 +451,7 @@ export async function tWithUser(
   params?: Record<string, string>
 ): Promise<string> {
   try {
-    const { getUserByDiscordId } = await import('./userManager');
+    const { getUserByDiscordId } = await import('./userManager.js');
     const user = await getUserByDiscordId(userId);
     const userLocale = (user?.language as Locale) || getDefaultLocale();
     return t(key, userLocale, params);

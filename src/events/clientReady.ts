@@ -1,8 +1,8 @@
 import { ActivityType } from 'discord.js';
 import { Discord, Once } from 'discordx';
-import { bot } from '../bot';
+import { bot } from '../bot.js';
 import { debugLog } from '../utils/debug.js';
-import { getDefaultLocale, t } from '../utils/localization';
+import { getDefaultLocale, t } from '../utils/localization.js';
 
 @Discord()
 export class Ready {

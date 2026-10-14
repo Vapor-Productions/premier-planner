@@ -18,7 +18,7 @@ import {
   Slash,
 } from 'discordx';
 import { tWithUser } from '../../../utils/localization.js';
-import { capitalise, deletableCheck, getCommandIds } from '../../../utils/util';
+import { capitalise, deletableCheck, getCommandIds } from '../../../utils/util.js';
 
 // Map categories to their emojis
 const categoryEmojis: Record<string, string> = {
