@@ -1,36 +1,47 @@
 ## build runner
-FROM node:lts-alpine AS build-runner
+FROM node:24-alpine AS build-runner
+
+# Prisma's engines need openssl on Alpine
+RUN apk add --no-cache openssl
 
 # Set temp directory
 WORKDIR /tmp/app
 
-# Move package.json
-COPY package.json .
+# Install dependencies from the lockfile
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile --ignore-scripts
 
-# Install dependencies
-RUN npm install
-
-# Move source files
+# Move source files and the Prisma schema
+COPY prisma ./prisma
+COPY prisma.config.ts tsconfig.json ./
 COPY src ./src
-COPY tsconfig.json   .
 
-# Build project
-RUN npm run build
+# Generate the Prisma client and build project (yarn build runs prisma generate)
+RUN yarn build
 
 ## production runner
-FROM node:lts-alpine AS prod-runner
+FROM node:24-alpine AS prod-runner
+
+# Prisma's engines need openssl on Alpine
+RUN apk add --no-cache openssl
 
 # Set work directory
 WORKDIR /app
 
-# Copy package.json from build-runner
-COPY --from=build-runner /tmp/app/package.json /app/package.json
+# Install production dependencies
+COPY package.json yarn.lock ./
+RUN yarn install --production --frozen-lockfile --ignore-scripts && yarn cache clean
 
-# Install dependencies
-RUN npm install --omit=dev
+# The schema and config let `prisma db push` run from this image (docker-compose does)
+COPY prisma ./prisma
+COPY prisma.config.ts ./
 
-# Move build files
+# Move build files (the generated Prisma client is compiled into build/)
 COPY --from=build-runner /tmp/app/build /app/build
 
-# Start bot
-CMD [ "npm", "run", "start" ]
+# Run as the unprivileged node user, not root
+RUN chown -R node:node /app
+USER node
+
+ENV NODE_ENV=production
+CMD [ "node", "build/main.js" ]

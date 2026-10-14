@@ -1,11 +1,17 @@
-version: "3"
+# Local stack with its own Postgres. Production runs on the panel against Neon, not this file.
 services:
   app:
     build: .
     env_file: .env
-    command: node build/main.js
+    environment:
+      # Overrides .env so the app talks to the db service below
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres
+    # Apply the schema to the fresh database before starting
+    command: sh -c "npx prisma db push && node build/main.js"
+    restart: unless-stopped
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:16
@@ -14,8 +20,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
     ports:
-      - "5432:5432"
+      # Local access only; never expose Postgres with default credentials publicly
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
