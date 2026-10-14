@@ -130,9 +130,25 @@ Copy `.env.example` to `.env` and fill it in. Only `DISCORD_TOKEN` and `DATABASE
 | `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET`, `RIOT_REDIRECT_URI` | for `/riot link` | Riot Sign-On credentials and the public callback URL. `RIOT_CLIENT_SECRET` falls back to `RIOT_API_KEY` |
 | `RIOT_LINK_PORT` | no | Port the callback server listens on; defaults to the port in `RIOT_REDIRECT_URI`. Set it when a reverse proxy serves the public URL |
 | `RIOT_LINK_BIND_HOST` | no | Interface the callback server binds to (default `0.0.0.0`); the path comes from `RIOT_REDIRECT_URI` |
-| `VAL_API_KEY` | for `/riot link-backup` | HenrikDev Valorant API key, also sent with Premier lookups when set |
+| `ALLOW_NON_RSO_LINK` | no | Development-only escape hatch for non-RSO linking. It must be exactly `true` and is ignored when `NODE_ENV=production` |
+| `VAL_API_KEY` | for development non-RSO linking | HenrikDev Valorant API key, also sent with Premier lookups when set |
 | `MAINTENANCE_MODE` | no | `1` pauses every command that checks maintenance |
-| `MAINTENANCE_COMMANDS` | no | Comma-separated command ids to pause, e.g. `riot.link,riot.link-backup` |
+| `MAINTENANCE_COMMANDS` | no | Comma-separated command ids to pause, e.g. `riot.link,riot.unlink,riot.link-backup` |
+
+## Riot account linking and opt-out
+
+`/riot link` is the production linking path. It opens Riot Sign-On, displays the opt-in notice and privacy policy URL in Discord, and completes through the built-in callback server on the path from `RIOT_REDIRECT_URI`. The OAuth request uses the Riot `openid offline_access` scope, and the linked Riot ID is stored on the user's `User` row.
+
+Players can run `/riot unlink` at any time to clear `riotPuuid`, `riotGameName`, `riotTagLine`, and `riotLinkedAt` from their row. After unlinking, Premier Planner no longer has a Riot identity to use for roster-related features until the player links again.
+
+`/riot link-backup` and owner `/riot link-verify` are non-RSO development tools only. They require all of the following:
+
+- `NODE_ENV` is not `production`.
+- `ALLOW_NON_RSO_LINK=true`.
+- The caller is listed in `BOT_DEV_IDS`.
+- `VAL_API_KEY` is set so the bot can resolve a Riot ID through HenrikDev.
+
+Do not rely on these commands for production onboarding; Riot identity collection in production must go through the player's `/riot link` opt-in flow.
 
 ## Error Logging to Discord Channel
 

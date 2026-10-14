@@ -12,7 +12,7 @@ Organises Valorant Premier teams in Discord. Players link their Riot account thr
 
 ## Scope
 - Serves many servers: global commands in production, `DEV_GUILD_IDS` for faster registration in development. Teams are scoped per guild.
-- **Commands:** `setup`, `team` (create, view, manage), `riot link` (RSO, open to every member once the `RIOT_*` variables are set; until then admins are pointed at the backup), `riot link-backup` (admins and bot devs), `riot link-verify` (owner only, restricted to `BOT_DEV_IDS`), `language`, `profile view|update`, `info`, `help`, `ping`.
+- **Commands:** `setup`, `team` (create, view, manage), `riot link` (RSO, open to every member once the `RIOT_*` variables are set), `riot unlink` (member opt-out), `riot link-backup` and `riot link-verify` (development-only non-RSO tools, disabled in production and restricted to `BOT_DEV_IDS` with `ALLOW_NON_RSO_LINK=true`), `language`, `profile view|update`, `info`, `help`, `ping`.
 - Riot Sign-On callback served by a built-in HTTP server (`utils/riot/linkServer.ts`) on `RIOT_LINK_BIND_HOST`.
 - Maintenance mode (`MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`) and verbose logging (`DEBUG_MODE`).
 - Uses the Premier and Valorant APIs (`premierApi.ts`, `VAL_API_KEY`).
@@ -36,11 +36,11 @@ The template defects were fixed on branch `fix/template-defects` (2026-10-14); `
 Guilds only, no privileged intents. The member lookups in `team.ts` use `guild.members.fetch(id)`, a REST call that needs no intent, so GuildMembers was dropped (2026-10-14).
 
 ## Env vars
-`.env.example`, `src/types/environment.d.ts` and the README table list the same set: `DISCORD_TOKEN`, `DATABASE_URL`, `ERROR_LOG_CHANNEL_ID`, `NODE_ENV`, `DEV_GUILD_IDS`, `BOT_DEV_IDS`, `DEBUG_MODE`, `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET` (falls back to `RIOT_API_KEY`), `RIOT_REDIRECT_URI`, `RIOT_LINK_PORT`, `RIOT_LINK_BIND_HOST`, `VAL_API_KEY`, `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.
+`.env.example`, `src/types/environment.d.ts` and the README table list the same set: `DISCORD_TOKEN`, `DATABASE_URL`, `ERROR_LOG_CHANNEL_ID`, `NODE_ENV`, `DEV_GUILD_IDS`, `BOT_DEV_IDS`, `DEBUG_MODE`, `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET` (falls back to `RIOT_API_KEY`), `RIOT_REDIRECT_URI`, `RIOT_LINK_PORT`, `RIOT_LINK_BIND_HOST`, `ALLOW_NON_RSO_LINK`, `VAL_API_KEY`, `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.
 
 ## Data model
 PostgreSQL through Prisma 7 with migrations in `prisma/migrations` (`0_init` is the baseline). Production runs `yarn start:migrate`, which applies pending migrations with `prisma migrate deploy` before starting.
-- `User`: discordId, username, language, Riot PUUID, game name, tag line and link date
+- `User`: discordId, username, language, Riot PUUID, game name, tag line and link date; `/riot unlink` clears the Riot fields without deleting the Discord user row
 - `Team`: name, teamTag, guildId and leader, unique on (name, teamTag)
 - `TeamMember`: join table between Team and User, with cascade delete
 
@@ -48,5 +48,6 @@ PostgreSQL through Prisma 7 with migrations in `prisma/migrations` (`0_init` is 
 Docker Compose with app and postgres:16 is for local runs: it applies migrations and binds Postgres to localhost. The RSO callback needs a public URL that matches `RIOT_REDIRECT_URI`. *(fill in the host)*
 
 ## Decisions made
-- Riot accounts are linked through official RSO, with a manual backup and verification path for bot devs.
+- Riot accounts are linked through official RSO in production. The Discord prompt and callback page tell players that linking is an opt-in to sharing Riot identity and roster status with Premier Planner, and `/riot unlink` is the opt-out path.
+- Manual Riot ID linking through HenrikDev is only a local/development escape hatch: it is blocked when `NODE_ENV=production`, requires `ALLOW_NON_RSO_LINK=true`, and only `BOT_DEV_IDS` users can run it.
 - Team names are unique per name and tag combination, not per guild. *(Intended?)*
