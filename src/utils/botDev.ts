@@ -2,7 +2,7 @@ import { type CommandInteraction, PermissionsBitField } from 'discord.js';
 
 /**
  * Comma-separated Discord user IDs with extra bot privileges (same pattern as `DEV_GUILD_IDS`).
- * Used together with guild Administrator for `/riot link` and `/riot link-backup`, or alone for dev-only commands.
+ * Used for owner/dev-only commands. `/riot link` is available to every player (RSO opt-in).
  */
 export function getBotDevUserIds(): string[] {
   return (

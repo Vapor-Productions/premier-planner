@@ -7,6 +7,7 @@ const TRUTHY = new Set(['1', 'true', 'yes', 'on']);
  */
 export const MaintenanceCommandId = {
   riotLink: 'riot.link',
+  riotUnlink: 'riot.unlink',
   riotLinkBackup: 'riot.link-backup',
   riotLinkVerify: 'riot.link-verify',
 } as const;

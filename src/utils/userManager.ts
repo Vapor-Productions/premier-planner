@@ -65,6 +65,41 @@ export async function saveLinkedRiotAccount(
   return 'ok';
 }
 
+/**
+ * Clears Riot identity fields for a Discord user (player opt-out / unlink).
+ * @returns `not_linked` if there was no Riot link, `ok` if cleared, `no_user` if no DB row.
+ */
+export async function clearLinkedRiotAccount(
+  discordId: string
+): Promise<'ok' | 'not_linked' | 'no_user'> {
+  debugLog('userManager', 'clearLinkedRiotAccount', { discordId });
+  const user = await prisma.user.findUnique({
+    where: { discordId },
+    select: { riotPuuid: true },
+  });
+  if (!user) {
+    debugLog('userManager', 'clearLinkedRiotAccount -> no_user');
+    return 'no_user';
+  }
+  if (!user.riotPuuid) {
+    debugLog('userManager', 'clearLinkedRiotAccount -> not_linked');
+    return 'not_linked';
+  }
+
+  await prisma.user.update({
+    where: { discordId },
+    data: {
+      riotPuuid: null,
+      riotGameName: null,
+      riotTagLine: null,
+      riotLinkedAt: null,
+      updatedAt: new Date(),
+    },
+  });
+  debugLog('userManager', 'clearLinkedRiotAccount -> ok');
+  return 'ok';
+}
+
 export interface UserData {
   discordId: string;
   username: string;

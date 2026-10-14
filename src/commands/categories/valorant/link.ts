@@ -1,13 +1,25 @@
 import { Category } from '@discordx/utilities';
-import { ApplicationCommandOptionType, type CommandInteraction, MessageFlags } from 'discord.js';
-import type { Client } from 'discordx';
+import {
+  ActionRowBuilder,
+  ApplicationCommandOptionType,
+  ButtonBuilder,
+  ButtonStyle,
+  type CommandInteraction,
+  EmbedBuilder,
+  MessageFlags,
+} from 'discord.js';
 import { Discord, Slash, SlashGroup, SlashOption } from 'discordx';
-import { canUseAdminOrBotDev } from '../../../utils/botDev.js';
+import { isBotDevUser } from '../../../utils/botDev.js';
 import { tWithUser } from '../../../utils/localization.js';
 import { isCommandInMaintenance, MaintenanceCommandId } from '../../../utils/maintenance.js';
 import { fetchValorantAccountByRiotId } from '../../../utils/premierApi.js';
-import { ensureUserExists, saveLinkedRiotAccount } from '../../../utils/userManager.js';
-import { getSlashCommandMention } from '../../../utils/util.js';
+import { isNonRsoLinkAllowed } from '../../../utils/riot/compliance.js';
+import { createRiotLinkSession, isRiotLinkConfigured } from '../../../utils/riot/linkServer.js';
+import {
+  clearLinkedRiotAccount,
+  ensureUserExists,
+  saveLinkedRiotAccount,
+} from '../../../utils/userManager.js';
 
 @Discord()
 @Category('Valorant')
@@ -20,14 +32,6 @@ export class RiotLinkCommands {
   async link(interaction: CommandInteraction): Promise<void> {
     const userId = interaction.user.id;
 
-    if (!canUseAdminOrBotDev(interaction)) {
-      await interaction.reply({
-        content: await tWithUser('commands.riot.noPrivilegedAccess', userId),
-        flags: MessageFlags.Ephemeral,
-      });
-      return;
-    }
-
     if (isCommandInMaintenance(MaintenanceCommandId.riotLink)) {
       await interaction.reply({
         content: await tWithUser('bot.maintenance', userId),
@@ -36,20 +40,83 @@ export class RiotLinkCommands {
       return;
     }
 
-    const mention = await getSlashCommandMention(
-      interaction.client as Client,
-      'riot',
-      'link-backup'
+    if (!isRiotLinkConfigured()) {
+      await interaction.reply({
+        content: await tWithUser('commands.riot.link.notConfigured', userId),
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    await ensureUserExists(userId, interaction.user.username);
+
+    const session = createRiotLinkSession(userId);
+    if ('error' in session) {
+      await interaction.reply({
+        content: await tWithUser('commands.riot.link.notConfigured', userId),
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    const title = await tWithUser('commands.riot.link.title', userId);
+    const disclaimer = await tWithUser('commands.riot.link.disclaimer', userId);
+    const instructions = await tWithUser('commands.riot.link.instructions', userId);
+    const privacyUrl = await tWithUser('commands.riot.link.privacyUrl', userId);
+    const openLabel = await tWithUser('commands.riot.link.openAuthorize', userId);
+
+    const embed = new EmbedBuilder()
+      .setTitle(title)
+      .setDescription(`${disclaimer}\n\n${instructions}\n\n${privacyUrl}`)
+      .setColor(0xff4655);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setLabel(openLabel)
+        .setStyle(ButtonStyle.Link)
+        .setURL(session.authorizeUrl)
     );
+
     await interaction.reply({
-      content: await tWithUser('commands.riot.link.redirectToBackup', userId, { mention }),
+      embeds: [embed],
+      components: [row],
       flags: MessageFlags.Ephemeral,
     });
   }
 
   @Slash({
+    name: 'unlink',
+    description: 'Unlink your Riot account from Premier Planner',
+  })
+  async unlink(interaction: CommandInteraction): Promise<void> {
+    const userId = interaction.user.id;
+
+    if (isCommandInMaintenance(MaintenanceCommandId.riotUnlink)) {
+      await interaction.reply({
+        content: await tWithUser('bot.maintenance', userId),
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+    const result = await clearLinkedRiotAccount(userId);
+    if (result === 'ok') {
+      await interaction.editReply({
+        content: await tWithUser('commands.riot.unlink.success', userId),
+      });
+      return;
+    }
+
+    await interaction.editReply({
+      content: await tWithUser('commands.riot.unlink.notLinked', userId),
+    });
+  }
+
+  @Slash({
     name: 'link-backup',
-    description: 'Backup: link Riot account using Riot ID (HenrikDev API)',
+    description: 'Dev-only emergency: link via Riot ID (disabled in production)',
   })
   async linkBackup(
     @SlashOption({
@@ -70,9 +137,9 @@ export class RiotLinkCommands {
   ): Promise<void> {
     const userId = interaction.user.id;
 
-    if (!canUseAdminOrBotDev(interaction)) {
+    if (!isNonRsoLinkAllowed() || !isBotDevUser(userId)) {
       await interaction.reply({
-        content: await tWithUser('commands.riot.noPrivilegedAccess', userId),
+        content: await tWithUser('commands.riot.linkBackup.disabled', userId),
         flags: MessageFlags.Ephemeral,
       });
       return;

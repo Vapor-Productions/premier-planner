@@ -1,21 +1,22 @@
 # BOT.md — Premier Planner
 
-> Brief written 2026-10-11 from the code in `premier_bot` (last commit 2026-03-29). Lines marked *(fill in)* could not be read from the code.
+> Brief updated 2026-10-15 for Riot VALORANT API / RSO compliance.
 
 ## Purpose
-Organises Valorant Premier teams in Discord. Players link their Riot account through Riot Sign-On, create and manage teams with team tags, and keep profiles in their chosen language.
+Organises Valorant Premier teams in Discord. Players link their Riot account through official Riot Sign-On (RSO), create and manage teams with team tags, and keep profiles in their chosen language.
 
 ## Repo and location
 - GitHub: https://github.com/Vapor-Productions/premier-planner
 - Local: `Discord-Projecten/premier_bot`
-- Docs: https://github.com/Vapor-Productions/docs (local `Bot Documentation/premplan-docs`)
+- Docs: https://docs.premierplanner.eu (local `Bot Documentation/premplan-docs`)
 
 ## Scope
 - Serves many servers: global commands in production, `DEV_GUILD_IDS` for faster registration in development. Teams are scoped per guild.
-- **Commands:** `setup`, `team` (create, view, manage), `riot link` (RSO) and `riot link-backup`, `riot link-verify` (owner only, restricted to `BOT_DEV_IDS`), `language`, `profile view|update`, `info`, `help`, `ping`.
+- **Commands:** `setup`, `team` (create, view, manage), `riot link` (RSO, any player), `riot unlink` (clears stored Riot identity), `language`, `profile view|update`, `info`, `help`, `ping`.
+- **Dev-only (disabled in production):** `riot link-backup`, `riot link-verify` — require `ALLOW_NON_RSO_LINK=true`, non-production `NODE_ENV`, and `BOT_DEV_IDS`.
 - Riot Sign-On callback served by a built-in HTTP server (`utils/riot/linkServer.ts`) on `RIOT_LINK_BIND_HOST`.
 - Maintenance mode (`MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`) and verbose logging (`DEBUG_MODE`).
-- Uses the Premier and Valorant APIs (`premierApi.ts`, `VAL_API_KEY`).
+- Premier roster lookup via HenrikDev (`premierApi.ts`, `VAL_API_KEY`) — not used for production account linking.
 
 ## Template parts
 Built from `bot-template` (discordx 11, Prisma **7** with `@prisma/adapter-pg`, Biome, Yarn, Docker, vapors-cli config).
@@ -36,9 +37,7 @@ Built from `bot-template` (discordx 11, Prisma **7** with `@prisma/adapter-pg`, 
 Guilds, GuildMessages, GuildMessageReactions, GuildVoiceStates, **GuildMembers (privileged)**, **MessageContent (privileged)**. GuildVoiceStates and MessageContent are probably unused.
 
 ## Env vars
-In `.env.example`: `DISCORD_CLIENT_ID`, `DISCORD_GUILD_ID`, `DISCORD_TOKEN`, `DATABASE_URL`, `ERROR_LOG_CHANNEL_ID`, `NODE_ENV`, `DEV_GUILD_IDS`, `BOT_DEV_IDS`, `DEBUG_MODE`.
-
-**Read by the code but missing from `.env.example`:** `RIOT_API_KEY`, `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET`, `RIOT_REDIRECT_URI`, `RIOT_LINK_BIND_HOST`, `VAL_API_KEY`, `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.
+See `.env.example`. Notable: `RIOT_CLIENT_ID`, `RIOT_CLIENT_SECRET` (or `RIOT_API_KEY`), `RIOT_REDIRECT_URI`, `RIOT_LINK_BIND_HOST`, `VAL_API_KEY`, `ALLOW_NON_RSO_LINK` (dev only), `MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`.
 
 ## Data model
 PostgreSQL through Prisma 7 (`db push`). With real user data, migrations would be the safer choice.
@@ -50,5 +49,12 @@ PostgreSQL through Prisma 7 (`db push`). With real user data, migrations would b
 Docker Compose with app and postgres:16. The RSO callback needs a public URL that matches `RIOT_REDIRECT_URI`. *(fill in the host)*
 
 ## Decisions made
-- Riot accounts are linked through official RSO, with a manual backup and verification path for bot devs.
+- Production account linking is **RSO only**. Players opt in via `/riot link` with an in-bot disclaimer that linking makes Riot identity / team status visible in Discord servers where they use the bot.
+- Non-RSO Henrik/name-tag linking is development-only behind `ALLOW_NON_RSO_LINK` and never available when `NODE_ENV=production`.
+- RSO authorize scope is `openid offline_access` per Riot VALORANT docs.
 - Team names are unique per name and tag combination, not per guild. *(Intended?)*
+
+## Riot compliance notes
+- Public user flow for reviewers (no Discord join required): https://docs.premierplanner.eu/guides/riot-account-linking
+- Privacy policy covers Riot data and opt-in visibility.
+- Product does not provide store checkers, cheats, real-time overlays, or betting.

@@ -158,7 +158,9 @@ async function handleCallback(
       status: 200,
       body: htmlPage(
         'Linked',
-        `<p>Riot account <strong>${escapeHtml(account.gameName)}#${escapeHtml(account.tagLine)}</strong> linked. You can close this window and return to Discord.</p>`
+        `<p>Riot account <strong>${escapeHtml(account.gameName)}#${escapeHtml(account.tagLine)}</strong> linked.</p>
+<p><strong>Important:</strong> By linking, you opted in to sharing your Riot identity with Premier Planner. Your linked Riot ID and team membership status may be visible to members of Discord servers where you use this bot.</p>
+<p>You can close this window and return to Discord. Privacy policy: <a href="https://docs.premierplanner.eu/legal/privacy-policy">docs.premierplanner.eu/legal/privacy-policy</a></p>`
       ),
     };
   } catch (e) {
