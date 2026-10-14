@@ -17,21 +17,11 @@ export const bot = new Client({
   // To use only guild command
   botGuilds: botGuilds,
 
-  // Discord intents
-  intents: [
-    IntentsBitField.Flags.Guilds,
-    IntentsBitField.Flags.GuildMembers,
-    IntentsBitField.Flags.GuildMessages,
-    IntentsBitField.Flags.GuildMessageReactions,
-    IntentsBitField.Flags.GuildVoiceStates,
-    IntentsBitField.Flags.MessageContent,
-  ],
+  // Discord intents. GuildMembers is privileged (enable it in the developer portal). There are no
+  // prefix commands, so no GuildMessages and no privileged MessageContent: bringing prefix commands
+  // back needs both, plus a messageCreate handler that calls ensureUserExists.
+  intents: [IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMembers],
 
   // Debug logs are disabled in silent mode
   silent: false,
-
-  // Configuration for @SimpleCommand
-  simpleCommand: {
-    prefix: '!',
-  },
 });
