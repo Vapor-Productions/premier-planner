@@ -3,8 +3,8 @@
   "sessionId": "888b52e6-4991-431e-bd28-dbe62eb314e7",
   "model": "grok-4.7-high",
   "startedAt": "2026-10-14T22:14:01.579Z",
-  "endedAt": "2026-10-14T22:48:17.554Z",
-  "durationMs": 2055944,
+  "endedAt": "2026-10-14T23:00:42.100Z",
+  "durationMs": 2800488,
   "status": "running",
   "tokens": {
     "total": 0,
@@ -16,8 +16,8 @@
   },
   "toolCalls": 144,
   "lines": {
-    "added": 136,
-    "removed": 42
+    "added": 3,
+    "removed": 1
   },
   "filesChanged": [
     "src/utils/riot/compliance.ts",
@@ -31,14 +31,15 @@
     "BOT.md",
     "src/types/environment.d.ts",
     "src/utils/userManager.ts",
-    "src/utils/maintenance.ts"
+    "src/utils/maintenance.ts",
+    "src/events/clientReady.ts"
   ],
   "git": {
-    "branch": "deploy/rso-compliance",
+    "branch": "main",
     "headBefore": "c6bc0bdd66bc7b0b406cde62f22fd94f5259f210",
-    "headAfter": "51e206a863853e0d9a667d723bb6df2036ff7527",
+    "headAfter": "41bf1aa51771e773974ff2a5aac04904488b2ec7",
     "commitShas": [
-      "51e206a863853e0d9a667d723bb6df2036ff7527"
+      "41bf1aa51771e773974ff2a5aac04904488b2ec7"
     ]
   },
   "summary": "I'll find how Premier Planner is hosted and get the bot deployed so you can test `/riot link`.",
