@@ -12,7 +12,7 @@ Organises Valorant Premier teams in Discord. Players link their Riot account thr
 
 ## Scope
 - Serves many servers: global commands in production, `DEV_GUILD_IDS` for faster registration in development. Teams are scoped per guild.
-- **Commands:** `setup`, `team` (create, view, manage), `riot link` (RSO) and `riot link-backup`, `riot link-verify` (owner only, restricted to `BOT_DEV_IDS`), `language`, `profile view|update`, `info`, `help`, `ping`.
+- **Commands:** `setup`, `team` (create, view, manage), `riot link` (RSO, open to every member once the `RIOT_*` variables are set; until then admins are pointed at the backup), `riot link-backup` (admins and bot devs), `riot link-verify` (owner only, restricted to `BOT_DEV_IDS`), `language`, `profile view|update`, `info`, `help`, `ping`.
 - Riot Sign-On callback served by a built-in HTTP server (`utils/riot/linkServer.ts`) on `RIOT_LINK_BIND_HOST`.
 - Maintenance mode (`MAINTENANCE_MODE`, `MAINTENANCE_COMMANDS`) and verbose logging (`DEBUG_MODE`).
 - Uses the Premier and Valorant APIs (`premierApi.ts`, `VAL_API_KEY`).

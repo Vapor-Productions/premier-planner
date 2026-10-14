@@ -1,12 +1,24 @@
 import { Category } from '@discordx/utilities';
-import { ApplicationCommandOptionType, type CommandInteraction, MessageFlags } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ApplicationCommandOptionType,
+  ButtonBuilder,
+  ButtonStyle,
+  type CommandInteraction,
+  MessageFlags,
+} from 'discord.js';
 import type { Client } from 'discordx';
 import { Discord, Slash, SlashGroup, SlashOption } from 'discordx';
 import { canUseAdminOrBotDev } from '../../../utils/botDev.js';
-import { tWithUser } from '../../../utils/localization.js';
+import { getDefaultLocale, type Locale, t, tWithUser } from '../../../utils/localization.js';
 import { isCommandInMaintenance, MaintenanceCommandId } from '../../../utils/maintenance.js';
 import { fetchValorantAccountByRiotId } from '../../../utils/premierApi.js';
-import { ensureUserExists, saveLinkedRiotAccount } from '../../../utils/userManager.js';
+import { createRiotLinkSession } from '../../../utils/riot/linkServer.js';
+import {
+  ensureUserExists,
+  getUserByDiscordId,
+  saveLinkedRiotAccount,
+} from '../../../utils/userManager.js';
 import { getSlashCommandMention } from '../../../utils/util.js';
 
 @Discord()
@@ -20,14 +32,6 @@ export class RiotLinkCommands {
   async link(interaction: CommandInteraction): Promise<void> {
     const userId = interaction.user.id;
 
-    if (!canUseAdminOrBotDev(interaction)) {
-      await interaction.reply({
-        content: await tWithUser('commands.riot.noPrivilegedAccess', userId),
-        flags: MessageFlags.Ephemeral,
-      });
-      return;
-    }
-
     if (isCommandInMaintenance(MaintenanceCommandId.riotLink)) {
       await interaction.reply({
         content: await tWithUser('bot.maintenance', userId),
@@ -36,13 +40,40 @@ export class RiotLinkCommands {
       return;
     }
 
-    const mention = await getSlashCommandMention(
-      interaction.client as Client,
-      'riot',
-      'link-backup'
-    );
+    // Until RIOT_CLIENT_ID, RIOT_CLIENT_SECRET and RIOT_REDIRECT_URI are set, sign-on is off:
+    // admins and bot devs are pointed at the HenrikDev backup, everyone else is told to wait.
+    const session = createRiotLinkSession(userId);
+    if ('error' in session) {
+      if (canUseAdminOrBotDev(interaction)) {
+        const mention = await getSlashCommandMention(
+          interaction.client as Client,
+          'riot',
+          'link-backup'
+        );
+        await interaction.reply({
+          content: await tWithUser('commands.riot.link.redirectToBackup', userId, { mention }),
+          flags: MessageFlags.Ephemeral,
+        });
+      } else {
+        await interaction.reply({
+          content: await tWithUser('commands.riot.link.unavailable', userId),
+          flags: MessageFlags.Ephemeral,
+        });
+      }
+      return;
+    }
+
+    // One language lookup for all three strings: each tWithUser is a database round trip, and
+    // the reply has to go out within Discord's 3-second window
+    const user = await getUserByDiscordId(userId);
+    const locale = (user?.language as Locale | undefined) ?? getDefaultLocale();
+    const button = new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setURL(session.authorizeUrl)
+      .setLabel(t('commands.riot.link.openAuthorize', locale));
     await interaction.reply({
-      content: await tWithUser('commands.riot.link.redirectToBackup', userId, { mention }),
+      content: `**${t('commands.riot.link.title', locale)}**\n${t('commands.riot.link.instructions', locale)}`,
+      components: [new ActionRowBuilder<ButtonBuilder>().addComponents(button)],
       flags: MessageFlags.Ephemeral,
     });
   }

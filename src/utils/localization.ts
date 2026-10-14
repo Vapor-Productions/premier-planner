@@ -145,7 +145,9 @@ export const locales = {
             'Open de onderstaande link, log in bij Riot en keer terug naar Discord wanneer je klaar bent. De sessie verloopt na 15 minuten.',
           openAuthorize: 'Inloggen bij Riot',
           notConfigured:
-            'Riot Sign-On is niet geconfigureerd. Zet RIOT_CLIENT_ID, RIOT_REDIRECT_URI en RIOT_API_KEY (client secret) in de omgeving en start de bot opnieuw.',
+            'Riot Sign-On is niet geconfigureerd. Zet RIOT_CLIENT_ID, RIOT_CLIENT_SECRET en RIOT_REDIRECT_URI in de omgeving en start de bot opnieuw.',
+          unavailable:
+            'Riot-accounts koppelen is nog niet beschikbaar op deze bot. Vraag een serverbeheerder om hulp.',
           redirectToBackup:
             'Gebruik {mention} om je Riot-account te koppelen met je in-game naam en tag (HenrikDev).',
         },
@@ -348,7 +350,9 @@ export const locales = {
             'Open the link below, sign in with Riot, then return to Discord when done. The session expires after 15 minutes.',
           openAuthorize: 'Sign in with Riot',
           notConfigured:
-            'Riot Sign-On is not configured. Set RIOT_CLIENT_ID, RIOT_REDIRECT_URI, and RIOT_API_KEY (OAuth client secret) in the environment and restart the bot.',
+            'Riot Sign-On is not configured. Set RIOT_CLIENT_ID, RIOT_CLIENT_SECRET and RIOT_REDIRECT_URI in the environment and restart the bot.',
+          unavailable:
+            'Linking a Riot account is not available on this bot yet. Ask a server admin for help.',
           redirectToBackup:
             'Use {mention} to link your Riot account with your in-game name and tag (HenrikDev).',
         },
