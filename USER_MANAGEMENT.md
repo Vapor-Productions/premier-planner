@@ -33,7 +33,11 @@ model User {
 
 `discordId` is the Discord-facing key; `id` is the uuid every relation points at. Relate to `user.id`, never to the Discord ID.
 
-The Riot columns are filled by account linking (`saveLinkedRiotAccount`, from Riot Sign-On or the HenrikDev backup). `riotPuuid` is unique: linking a Riot account that another Discord user already linked returns `puuid_taken` instead of moving it.
+The Riot columns are filled by account linking (`saveLinkedRiotAccount`, from Riot Sign-On or a development-only HenrikDev path). `riotPuuid` is unique: linking a Riot account that another Discord user already linked returns `puuid_taken` instead of moving it.
+
+Production Riot linking must come from the player's `/riot link` Riot Sign-On opt-in. Non-RSO linking is blocked when `NODE_ENV=production`; outside production it still requires `ALLOW_NON_RSO_LINK=true` and a caller in `BOT_DEV_IDS`.
+
+`/riot unlink` is the opt-out path. It calls `clearLinkedRiotAccount(discordId)`, which leaves the Discord user row and language preference intact while clearing `riotPuuid`, `riotGameName`, `riotTagLine` and `riotLinkedAt`. If there is no row or no linked Riot account, the command reports the same "not linked" result to the user.
 
 ## When it fails
 
@@ -45,4 +49,5 @@ A database error in `ensureUserExists` is logged and rethrown. `interactionCreat
 - `getUserByDiscordId(discordId)`: the row or `null`.
 - `updateUserLanguage(discordId, language)`: sets the language preference.
 - `saveLinkedRiotAccount(discordId, payload, username)`: stores a linked Riot account.
+- `clearLinkedRiotAccount(discordId)`: clears the linked Riot fields for player opt-out; returns `ok`, `not_linked` or `no_user`.
 - `closePrismaConnection()`: used by `utils/shutdown.ts` on SIGINT/SIGTERM.

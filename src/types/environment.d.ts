@@ -30,13 +30,16 @@ declare global {
       /** Interface the link server binds to (default `0.0.0.0`). */
       RIOT_LINK_BIND_HOST?: string;
 
-      /** HenrikDev Valorant API key. */
+      /** Development-only non-RSO linking; ignored in production unless exactly `true` outside production. */
+      ALLOW_NON_RSO_LINK?: string;
+
+      /** HenrikDev Valorant API key for Premier lookups and development non-RSO linking. */
       VAL_API_KEY?: string;
 
       // Maintenance
       /** `1`, `true`, `yes` or `on` pauses every command that checks maintenance. */
       MAINTENANCE_MODE?: string;
-      /** Comma-separated command ids, e.g. `riot.link,riot.link-backup`. */
+      /** Comma-separated command ids, e.g. `riot.link,riot.unlink,riot.link-backup`. */
       MAINTENANCE_COMMANDS?: string;
 
       // Add other environment variables as needed
