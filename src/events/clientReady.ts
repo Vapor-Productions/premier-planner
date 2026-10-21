@@ -2,6 +2,7 @@ import { ActivityType } from 'discord.js';
 import { Discord, Once } from 'discordx';
 import { bot } from '../bot.js';
 import { debugLog } from '../utils/debug.js';
+import { startGuildPurgeJob } from '../utils/guildRemoval.js';
 import { getDefaultLocale, t } from '../utils/localization.js';
 
 @Discord()
@@ -46,6 +47,8 @@ export class Ready {
       const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
       bot.user?.setActivity(randomStatus.name, { type: randomStatus.type });
     }, 60000);
+
+    startGuildPurgeJob(bot);
 
     // Pterodactyl node.js generic egg marks the server online when console matches
     // config_startup.done (currently "Discord bot logged" / "Logged in on").
