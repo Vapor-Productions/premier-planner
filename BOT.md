@@ -33,7 +33,7 @@ Built from `bot-template` (discordx 11, Prisma **7** with `@prisma/adapter-pg`, 
 The template defects were fixed on branch `fix/template-defects` (2026-10-14); `USER_MANAGEMENT.md` now describes this bot.
 
 ## Intents
-All non-privileged intents are enabled (2026-10-15): Guilds, GuildModeration, GuildExpressions, GuildIntegrations, GuildWebhooks, GuildInvites, GuildVoiceStates, GuildMessages, GuildMessageReactions, GuildMessageTyping, GuildMessagePolls, DirectMessages, DirectMessageReactions, DirectMessageTyping, DirectMessagePolls, GuildScheduledEvents, AutoModerationConfiguration, AutoModerationExecution. No `Partials` are set because no code handles DM events; add `Partials.Channel` if a DM handler is ever written.
+Only `Guilds` (2026-10-21; it was every non-privileged intent from 2026-10-15). It keeps the guild, channel and role caches and delivers `guildCreate`/`guildDelete` for the data purge. Slash commands and components are interactions, which need no intent. Discord's Developer Policy asks apps to request only the data they use, so add an intent only together with the code that needs it. No `Partials` are set because no code handles DM events; add the DM intents and `Partials.Channel` if a DM handler is ever written.
 
 The privileged intents (GuildMembers, GuildPresences, MessageContent) stay off because nothing uses them. The member lookups in `team.ts` use `guild.members.fetch(id)`, a REST call that needs no intent, and there are no prefix commands.
 
@@ -47,6 +47,7 @@ PostgreSQL through Prisma 7 with migrations in `prisma/migrations` (`0_init` is 
 - `User`: discordId, username, language, Riot PUUID, game name, tag line and link date; `/riot unlink` clears the Riot fields without deleting the Discord user row
 - `Team`: name, teamTag, guildId and leader, unique on (name, teamTag)
 - `TeamMember`: join table between Team and User, with cascade delete
+- `RemovedGuild`: servers the bot was removed from (`guildDelete`, skipping outages; cleared on `guildCreate`; reconciled with the guild cache on ready). The daily purge in `src/utils/guildRemoval.ts` deletes their teams 30 days later. `User` rows and Riot links are not per server and stay. Guards against a bot on the wrong database: the startup reconcile marks nothing if it would mark more than half of the servers at once, and a server the running bot is in is unmarked rather than purged.
 
 ## Hosting
 Docker Compose with app and postgres:16 is for local runs: it applies migrations and binds Postgres to localhost. The RSO callback needs a public URL that matches `RIOT_REDIRECT_URI`. *(fill in the host)*
@@ -55,3 +56,4 @@ Docker Compose with app and postgres:16 is for local runs: it applies migrations
 - Riot accounts are linked through official RSO in production. The Discord prompt and callback page tell players that linking is an opt-in to sharing Riot identity and roster status with Premier Planner, and `/riot unlink` is the opt-out path.
 - Manual Riot ID linking through HenrikDev is only a local/development escape hatch: it is blocked when `NODE_ENV=production`, requires `ALLOW_NON_RSO_LINK=true`, and only `BOT_DEV_IDS` users can run it.
 - Team names are unique per name and tag combination, not per guild. *(Intended?)*
+- 2026-10-21: a server's teams are deleted 30 days after the bot is removed from it (Developer Terms §5b), and intents are cut to `Guilds` (data minimisation).
