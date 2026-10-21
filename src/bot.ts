@@ -17,30 +17,11 @@ export const bot = new Client({
   // To use only guild command
   botGuilds: botGuilds,
 
-  // Discord intents: every non-privileged intent. The privileged ones (GuildMembers,
-  // GuildPresences, MessageContent) stay off because nothing uses them: member lookups use
-  // guild.members.fetch(id), a REST call, and there are no prefix commands. Enabling one once the
-  // app reaches 10,000+ unique users requires Discord's Privileged Intent Review (since 2026-06-10).
-  intents: [
-    IntentsBitField.Flags.Guilds,
-    IntentsBitField.Flags.GuildModeration,
-    IntentsBitField.Flags.GuildExpressions,
-    IntentsBitField.Flags.GuildIntegrations,
-    IntentsBitField.Flags.GuildWebhooks,
-    IntentsBitField.Flags.GuildInvites,
-    IntentsBitField.Flags.GuildVoiceStates,
-    IntentsBitField.Flags.GuildMessages,
-    IntentsBitField.Flags.GuildMessageReactions,
-    IntentsBitField.Flags.GuildMessageTyping,
-    IntentsBitField.Flags.GuildMessagePolls,
-    IntentsBitField.Flags.DirectMessages,
-    IntentsBitField.Flags.DirectMessageReactions,
-    IntentsBitField.Flags.DirectMessageTyping,
-    IntentsBitField.Flags.DirectMessagePolls,
-    IntentsBitField.Flags.GuildScheduledEvents,
-    IntentsBitField.Flags.AutoModerationConfiguration,
-    IntentsBitField.Flags.AutoModerationExecution,
-  ],
+  // Discord intents: only Guilds, which keeps the guild, channel and role caches and sends the
+  // guildCreate/guildDelete events the data purge needs. Slash commands and components arrive as
+  // interactions, which need no intent, and member lookups use guild.members.fetch(id), a REST
+  // call. Asking for intents nothing uses goes against Discord's data minimisation rule.
+  intents: [IntentsBitField.Flags.Guilds],
 
   // Debug logs are disabled in silent mode
   silent: false,

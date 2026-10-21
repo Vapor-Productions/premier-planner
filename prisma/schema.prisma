@@ -58,3 +58,12 @@ model TeamMember {
   @@index([teamId])
   @@index([userId])
 }
+
+/// A server Premier Planner was removed from. Its teams are deleted 30 days later unless the bot
+/// is added back, which deletes this row.
+model RemovedGuild {
+  guildId   String   @id
+  removedAt DateTime @default(now())
+
+  @@index([removedAt])
+}
