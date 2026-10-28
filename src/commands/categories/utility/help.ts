@@ -3,6 +3,9 @@ import {
   type CommandInteraction,
   ContainerBuilder,
   MessageFlags,
+  PermissionFlagsBits,
+  type PermissionResolvable,
+  PermissionsBitField,
   type SelectMenuComponentOptionData,
   SeparatorSpacingSize,
   StringSelectMenuBuilder,
@@ -33,11 +36,53 @@ const categoryEmojis: Record<string, string> = {
 /** Categories not shown in /help (owner-only and similar). */
 const HELP_EXCLUDED_CATEGORIES = new Set(['owner']);
 
+/** Bot-developer commands that live in a public category, by slash path. Never shown in /help. */
+const HELP_HIDDEN_COMMANDS = new Set(['riot link-backup']);
+
+type MemberPermissions = Readonly<PermissionsBitField> | null;
+
 function isCategoryVisibleInHelp(category: string | undefined): boolean {
   if (!category) {
     return false;
   }
   return !HELP_EXCLUDED_CATEGORIES.has(category.toLowerCase());
+}
+
+function hasPermissions(
+  required: DApplicationCommand['defaultMemberPermissions'] | undefined,
+  memberPermissions: MemberPermissions
+): boolean {
+  if (required === undefined || required === null) {
+    return true;
+  }
+  if (!memberPermissions) {
+    return false;
+  }
+  if (memberPermissions.has(PermissionFlagsBits.Administrator)) {
+    return true;
+  }
+  return memberPermissions.has(PermissionsBitField.resolve(required as PermissionResolvable));
+}
+
+/**
+ * Whether /help lists this command for someone with these server permissions (`null` in DMs):
+ * not a hidden developer command, and both its own and its group's default member permissions
+ * are met. Template candidate.
+ */
+function isCommandVisibleInHelp(
+  cmd: DApplicationCommand,
+  memberPermissions: MemberPermissions
+): boolean {
+  if (HELP_HIDDEN_COMMANDS.has(slashPathForHelp(cmd))) {
+    return false;
+  }
+  const group = cmd.group
+    ? MetadataStorage.instance.applicationCommandSlashes.find((c) => c.name === cmd.group)
+    : undefined;
+  return (
+    hasPermissions(cmd.defaultMemberPermissions, memberPermissions) &&
+    hasPermissions(group?.defaultMemberPermissions, memberPermissions)
+  );
 }
 
 /**
@@ -74,11 +119,14 @@ function getCategoryEmoji(category: string): string {
 /**
  * Pull all unique categories from registered commands and format them
  */
-function getCategoriesAsOptions(): SelectMenuComponentOptionData[] {
+function getCategoriesAsOptions(
+  memberPermissions: MemberPermissions
+): SelectMenuComponentOptionData[] {
   const uniqueCategories = Array.from(
     new Set(
       flatSlashCommands()
         .filter((cmd: DApplicationCommand & ICategory) => cmd.category)
+        .filter((cmd) => isCommandVisibleInHelp(cmd, memberPermissions))
         .filter((cmd: DApplicationCommand & ICategory) =>
           isCategoryVisibleInHelp(cmd.category as string)
         )
@@ -95,13 +143,19 @@ function getCategoriesAsOptions(): SelectMenuComponentOptionData[] {
 /**
  * Build the formatted command list for a specific category
  */
-async function buildCommandsList(category: string, client: Client): Promise<string> {
+async function buildCommandsList(
+  category: string,
+  client: Client,
+  memberPermissions: MemberPermissions
+): Promise<string> {
   if (!isCategoryVisibleInHelp(category)) {
     return '';
   }
   const filteredCommands = flatSlashCommands().filter(
     (cmd: DApplicationCommand & ICategory) =>
-      cmd.category?.toLowerCase() === category.toLowerCase() && cmd.name?.toLowerCase() !== 'help'
+      cmd.category?.toLowerCase() === category.toLowerCase() &&
+      cmd.name?.toLowerCase() !== 'help' &&
+      isCommandVisibleInHelp(cmd, memberPermissions)
   );
 
   const commandIds = await getCommandIds(client);
@@ -126,9 +180,10 @@ async function buildHelpContainer(
     selectMenu?: StringSelectMenuBuilder;
     showCategorySelector?: boolean;
     userId: string;
+    memberPermissions: MemberPermissions;
   }
 ): Promise<ContainerBuilder> {
-  const { category, selectMenu, showCategorySelector, userId } = options;
+  const { category, selectMenu, showCategorySelector, userId, memberPermissions } = options;
   const botName = client.user?.username ?? 'Bot';
 
   const [
@@ -138,6 +193,7 @@ async function buildHelpContainer(
     categoriesDescription1,
     categoriesDescription2,
     categoryCommandsTemplate,
+    missingCommandHint,
   ] = await Promise.all([
     tWithUser('commands.help.commandCenter', userId, { botName }),
     tWithUser('commands.help.welcome', userId, { botName }),
@@ -145,6 +201,7 @@ async function buildHelpContainer(
     tWithUser('commands.help.categoriesDescription1', userId),
     tWithUser('commands.help.categoriesDescription2', userId),
     tWithUser('commands.help.categoryCommands', userId),
+    tWithUser('commands.help.missingCommandHint', userId),
   ]);
 
   const headerText = new TextDisplayBuilder().setContent(
@@ -162,6 +219,8 @@ async function buildHelpContainer(
         '',
         `> **${categoriesDescription1}**`,
         `> ${categoriesDescription2}`,
+        '',
+        `-# ${missingCommandHint}`,
       ].join('\n')
     );
 
@@ -172,10 +231,16 @@ async function buildHelpContainer(
       return row.addComponents(selectMenu);
     });
   } else if (category) {
-    const commandsList = await buildCommandsList(category, client);
+    const commandsList = await buildCommandsList(category, client, memberPermissions);
     const categoryHeading = categoryCommandsTemplate.replace('{category}', capitalise(category));
     const commandsText = new TextDisplayBuilder().setContent(
-      [`## ${getCategoryEmoji(category)} **${categoryHeading}**`, '', commandsList, ''].join('\n')
+      [
+        `## ${getCategoryEmoji(category)} **${categoryHeading}**`,
+        '',
+        commandsList,
+        '',
+        `-# ${missingCommandHint}`,
+      ].join('\n')
     );
 
     container.addTextDisplayComponents(commandsText);
@@ -198,7 +263,8 @@ async function handleHelp(
   client: Client,
   selectMenu: StringSelectMenuBuilder
 ) {
-  const cats = getCategoriesAsOptions();
+  const memberPermissions = interaction.memberPermissions;
+  const cats = getCategoriesAsOptions(memberPermissions);
 
   if (cats.length <= 1) {
     // Single category or no categories
@@ -215,6 +281,7 @@ async function handleHelp(
     const container = await buildHelpContainer(client, {
       category: selectedCategory,
       userId: interaction.user.id,
+      memberPermissions,
     });
 
     await interaction.reply({
@@ -226,6 +293,7 @@ async function handleHelp(
       selectMenu,
       showCategorySelector: true,
       userId: interaction.user.id,
+      memberPermissions,
     });
 
     await interaction.reply({
@@ -279,6 +347,7 @@ async function handleSelectMenu(
     category: selectedCategory,
     selectMenu,
     userId: interaction.user.id,
+    memberPermissions: interaction.memberPermissions,
   });
 
   await interaction.update({
@@ -299,12 +368,15 @@ export class Help {
   /**
    * Create the dropdown menu with current categories and user-localized placeholder.
    */
-  private async createSelectMenu(userId: string): Promise<StringSelectMenuBuilder> {
+  private async createSelectMenu(
+    userId: string,
+    memberPermissions: MemberPermissions
+  ): Promise<StringSelectMenuBuilder> {
     const placeholder = await tWithUser('commands.help.selectPlaceholder', userId);
     return new StringSelectMenuBuilder()
       .setCustomId('helpSelect')
       .setPlaceholder(`🎯 ${placeholder}`)
-      .addOptions(...getCategoriesAsOptions());
+      .addOptions(...getCategoriesAsOptions(memberPermissions));
   }
 
   @Slash({ description: 'Display list of commands.' })
@@ -313,13 +385,19 @@ export class Help {
       return;
     }
 
-    const selectMenu = await this.createSelectMenu(interaction.user.id);
+    const selectMenu = await this.createSelectMenu(
+      interaction.user.id,
+      interaction.memberPermissions
+    );
     await handleHelp(interaction, client, selectMenu);
   }
 
   @SelectMenuComponent({ id: 'helpSelect' })
   async handle(interaction: StringSelectMenuInteraction, client: Client): Promise<void> {
-    const selectMenu = await this.createSelectMenu(interaction.user.id);
+    const selectMenu = await this.createSelectMenu(
+      interaction.user.id,
+      interaction.memberPermissions
+    );
     await handleSelectMenu(interaction, client, selectMenu);
   }
 }

@@ -75,6 +75,8 @@ export const locales = {
           'Alleen de persoon die het commando heeft uitgevoerd kan dit menu gebruiken!',
         accessDeniedHint: 'Voer het commando zelf uit om het helpmenu te openen.',
         selectPlaceholder: 'Kies een commandocategorie...',
+        missingCommandHint:
+          "Mis je een commando? Je ziet alleen de commando's die je rechten in deze server toestaan.",
       },
       info: {
         description: 'Toon informatie over de bot.',
@@ -292,6 +294,8 @@ export const locales = {
         accessDeniedError: 'Only the command executor can interact with this menu!',
         accessDeniedHint: 'Run the command yourself to access the help menu.',
         selectPlaceholder: 'Choose a command category...',
+        missingCommandHint:
+          'Missing a command? You only see the ones your permissions in this server allow.',
       },
       info: {
         description: 'Show information about the bot.',
